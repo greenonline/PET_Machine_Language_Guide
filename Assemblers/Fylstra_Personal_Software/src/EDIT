@@ -1,0 +1,102 @@
+   90 print"editor":print"(c) 1978, (p) 1978":print"personal software (tm)"
+   95 fori=1to2000:nexti
+  100 dim l$(200),i$(200)
+  110 e=0:print"{clr}"
+  120 q$=chr$(34):b$="                                       "
+  200 print"{home}";b$+" ";:printb$+" ";
+  210 print"{home}{rvon}l{rvof}ist, {rvon}i{rvof}nput, {rvon}d{rvof}elete, {rvon}s{rvof}earch, {rvon}r{rvof}ead, {rvon}w{rvof}rite";
+  220 gosub9000
+  230 ifa$="l"then1000
+  240 ifa$="i"then2000
+  250 ifa$="d"then3000
+  260 ifa$="s"then4000
+  270 ifa$="r"then5000
+  280 ifa$="w"then6000
+  285 ifa$="{clr}"thenprint"{clr}"
+  290 goto200
+ 1000 print"list";:gosub9100
+ 1010 forl=ftot
+ 1015 printleft$(b$,38)
+ 1020 print"{up} ";str$(l);",";q$;l$(l);q$
+ 1030 nextl
+ 1040 goto200
+ 2000 input"input before line";f
+ 2010 iff<>0then2050
+ 2020 inputl,i$:gosub9200
+ 2030 l$(l)=i$
+ 2035 ife<lthene=l
+ 2040 goto200
+ 2050 forl=fto200
+ 2060 print" ";str$(l);",";q$;"                               ";q$
+ 2070 input"{up}";k,i$
+ 2080 ifleft$(i$,1)="_"then2500
+ 2090 gosub9200
+ 2100 i$(l-f)=i$
+ 2110 nextl
+ 2500 print"press x to discard, any other to keep":gosub9000:ifa$="x"then200
+ 2510 fork=etofstep-1
+ 2520 l$(k+l-f)=l$(k)
+ 2530 nextk
+ 2540 fork=ftol-1
+ 2550 l$(k)=i$(k-f):i$(k-f)=""
+ 2560 nextk
+ 2570 e=e+l-f
+ 2580 printb$:print"{up}";fre(0);"bytes free"
+ 2590 goto200
+ 3000 print"delete";:gosub9100
+ 3010 d=t-f+1
+ 3020 ift>=ethen3070
+ 3030 forl=ftoe
+ 3040 ifl+d>ethen3060
+ 3050 l$(l)=l$(l+d):l$(l+d)=""
+ 3060 nextl
+ 3070 e=e-d
+ 3080 printb$:print"{up}";fre(0);"bytes free"
+ 3090 goto200
+ 4000 print"search";:gosub9100
+ 4005 printb$
+ 4010 input"{up}search for";s$:s=len(s$)
+ 4020 forl=ftot
+ 4030 l$=l$(l)
+ 4040 iflen(l$)<sthen4080
+ 4050 forp=1tolen(l$)-s+1
+ 4060 ifmid$(l$,p,s)=s$then4100
+ 4070 nextp
+ 4080 nextl
+ 4090 printb$;:print"{up}not found":goto200
+ 4100 printb$:print"{up} ";str$(l);",";q$;l$;q$
+ 4110 goto200
+ 5000 input"load before line";f
+ 5010 input"filename";f$
+ 5015 print"{clr}"
+ 5020 open1,1,0,f$:print"found ";f$
+ 5030 forl=fto200
+ 5040 input#1,l$
+ 5050 if(st)and64then5080
+ 5055 printl$
+ 5060 i$(l-f)=right$(l$,len(l$)-3)
+ 5070 nextl
+ 5080 close1
+ 5090 goto2500
+ 6000 print"write";:gosub9100
+ 6010 printb$:input"{up}filename";f$
+ 6015 print"{clr}"
+ 6020 open1,1,1,f$:print"created ";f$
+ 6030 forl=ftot
+ 6040 l$=right$("  "+str$(l),3)+l$(l)
+ 6050 print#1,q$+l$+q$:printl$
+ 6060 nextl
+ 6070 close1
+ 6080 goto200
+ 9000 geta$:ifa$=""then9000
+ 9010 return
+ 9100 input" from,to";f,t
+ 9110 iff=0andt=0thenf=1:t=e
+ 9120 ift=0thent=f
+ 9130 return
+ 9200 j$=i$
+ 9280 fork=len(j$)to1step-1
+ 9290 ifmid$(j$,k,1)<>" "then9310
+ 9300 nextk
+ 9310 i$=left$(j$,k)
+ 9320 return

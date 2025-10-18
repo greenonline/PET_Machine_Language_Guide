@@ -1,0 +1,374 @@
+  490 print"6502 assembler":print"(c) 1978, (p) 1978":print"personal software (tm)"
+  500 dimc(3),o$(3),m$(8),s(25),v%(25)
+  510 b$="22232233321"
+  520 o$(1)="244<20>4<4:6:48684000000>0<0:2:000002<4<20><<<:>:<8>8<"
+  530 o$(2)="000000000000000000000000000000;400940000000000;>000000"
+  540 o$(3)="000000000000;<0000006<000000000000000000000000;6009600"
+  555 m$(1)="adc611and211asl022bcc903bcs;03beq?03bit015"
+  560 m$(2)="bmi303bne=03bpl103brk004bvc503bvs703clc184"
+  570 m$(3)="cld=84cli584clv;84cmp<11cpx045cpy055dec<22"
+  580 m$(4)="dex<:4dey884eor411inc>22inx>84iny<84jmp025"
+  590 m$(5)="jsr035lda:11ldx065ldy075lsr422nop>:4ora011"
+  600 m$(6)="pha484php084pla684plp284rol222ror622rti404"
+  610 m$(7)="rts604sbc>11sec384sed?84sei784sta811stx085"
+  620 m$(8)="sty095tax::4tay:84tsx;:4txa8:4txs9:4tya984"
+  900 l8=826
+  910 print:input"source file";f$
+  920 iff$=""then1000
+  940 open1,1,0,f$
+ 1000 t1=ti
+ 1010 x=0:l=l8:e1=0:p1=1
+ 1060 forl2=1to10000
+ 1065 e=0
+ 1067 gosub10000
+ 1070 gosub2000
+ 1080 gosub9000
+ 1085 gosub11000
+ 1090 e1=e1+e
+ 1100 ifb>0thenl=l+b
+ 1110 ifp1=2goto1150
+ 1120 nextl2
+ 1150 printl2;"lines ";x;"symbols ";e1;"errors"
+ 1280 l8=l9+1
+ 1300 print"time";int((ti-t1)/(l2*.6))/100;"secs/line  ";fre(0);"bytes free"
+ 1310 print:input"execute";y$
+ 1320 ifleft$(y$,1)<>"y"thenstop
+ 1325 print"{clr}"
+ 1330 poke1,58:poke2,3
+ 1340 x1=usr(x1)
+ 1350 stop
+ 2000 rem
+ 2010 b=0:n1=-1
+ 2030 gosub6000
+ 2040 ift$="?"thenreturn
+ 2050 ifm1ort$<>":"goto2300
+ 2080 gosub14000
+ 2090 iff=1thene9=1:gosub13000
+ 2100 iff=0thenx=x+1:s(x)=i1:z=x
+ 2110 f1=f:z1=z
+ 2200 gosub6000
+ 2210 ift$<>"="thenv1=l:goto2270
+ 2220 gosub6000
+ 2230 b=-1:gosub5000
+ 2250 v1=a:s=a
+ 2270 iff1>=0then2290
+ 2275 ifs(z1)<0thenpoke-v%(z1),v1+v%(z1)-1:s(z1)=-s(z1):goto2290
+ 2280 a1=-v%(z1):v2=int(v1/256):v3=v1-v2*256
+ 2282 a2=peek(a1)+peek(a1+1)*256
+ 2284 pokea1,v3:pokea1+1,v2
+ 2288 ifa2<>256thena1=a2:goto2282
+ 2290 v%(z1)=v1
+ 2300 ift$<>"*"goto2400
+ 2320 gosub6000
+ 2330 ift$<>"="goto2900
+ 2340 gosub6000
+ 2350 b=-1:gosub5000
+ 2360 l=a
+ 2370 return
+ 2400 ift$<>"."goto2500
+ 2420 gosub3000
+ 2430 return
+ 2500 ifnotm1goto2900
+ 2520 n1=0
+ 2530 ifc<>4goto2600
+ 2540 gosub6000
+ 2550 ift$<>"?"goto2900
+ 2560 return
+ 2600 gosub4000
+ 2610 return
+ 2900 e9=0:gosub13000
+ 2910 return
+ 3000 rem
+ 3001 k$=mid$(l$,p,4)
+ 3010 p=p+4
+ 3020 ifk$="byte"goto3100
+ 3030 ifk$="word"goto3300
+ 3040 ifk$="text"goto3500
+ 3050 ifleft$(k$,3)="end"goto3700
+ 3060 p=p-4:e9=5:gosub13000
+ 3100 gosub6000
+ 3110 gosub5000
+ 3120 ifa>=256thene9=2:gosub13000
+ 3130 a1=a-256*int(a/256)
+ 3140 l9=l+b:v9=a1:gosub12000
+ 3150 b=b+1
+ 3160 ifb<=3thenc(b)=a1
+ 3170 ift$=","goto3100
+ 3180 ift$="?"ort$=" "thenreturn
+ 3190 e9=0:gosub13000
+ 3210 return
+ 3300 gosub6000
+ 3310 gosub5000
+ 3320 a1=a-256*int(a/256)
+ 3330 l9=l+b:v9=a1:gosub12000
+ 3340 b=b+1
+ 3350 ifb<4thenc(b)=a1
+ 3360 a1=int(a/256)
+ 3370 l9=l+b:v9=a1:gosub12000
+ 3380 b=b+1
+ 3390 ifb<4thenc(b)=a1
+ 3400 ift$=","goto3300
+ 3410 goto3180
+ 3500 forp=ptolen(l$)
+ 3510 ifmid$(l$,p,1)<>" "goto3540
+ 3520 nextp
+ 3530 goto3190
+ 3540 d$=mid$(l$,p,1)
+ 3550 p=p+1
+ 3560 forp=ptolen(l$)
+ 3570 ifmid$(l$,p,1)=d$goto3630
+ 3580 a1=asc(mid$(l$,p,1))and63
+ 3590 l9=l+b:v9=a1:gosub12000
+ 3600 b=b+1
+ 3610 ifb<4thenc(b)=a1
+ 3620 nextp
+ 3630 p=p+1
+ 3640 gosub6000
+ 3650 goto3180
+ 3700 rem endpunch
+ 3710 p1=p1+1
+ 3720 return
+ 4000 rem
+ 4010 gosub6000
+ 4020 ift$<>"a"goto4050
+ 4030 m=10
+ 4040 goto4800
+ 4050 ift$<>"#"goto4110
+ 4060 m=2
+ 4070 gosub6000
+ 4080 gosub5000
+ 4090 ifa>=256thene9=3:gosub13000
+ 4100 goto4810
+ 4110 ift$<>"("goto4500
+ 4120 gosub6000
+ 4130 gosub5000
+ 4140 ift$<>","goto4300
+ 4150 m=0
+ 4160 ifa>=256thene9=2:gosub13000
+ 4170 gosub6000
+ 4180 ift$<>"x"goto4900
+ 4190 gosub6000
+ 4200 ift$<>")"goto4900
+ 4210 goto4800
+ 4300 m=4
+ 4310 ift$<>")"goto4900
+ 4320 gosub6000
+ 4330 ift$<>"?"goto4400
+ 4340 m=8
+ 4350 return
+ 4400 ifa>=256thene9=2:gosub13000
+ 4410 ift$<>","goto4900
+ 4420 gosub6000
+ 4430 ift$<>"y"goto4900
+ 4440 goto4800
+ 4500 gosub5000
+ 4510 ift$<>"?"goto4600
+ 4520 m=1
+ 4530 ifa>=256thenm=3
+ 4540 goto4810
+ 4600 ift$<>","goto4520
+ 4610 gosub6000
+ 4620 ift$<>"x"goto4700
+ 4630 m=5
+ 4640 ifa>=256thenm=7
+ 4650 goto4800
+ 4700 ift$<>"y"goto4520
+ 4710 m=9
+ 4720 ifa>=256thenm=6
+ 4800 gosub6000
+ 4810 ift$="?"thenreturn
+ 4900 e9=0:gosub13000
+ 4910 return
+ 5000 rem
+ 5020 ift$<>":"goto5100
+ 5030 gosub14000
+ 5060 iff=1thena=v%(z):goto5200
+ 5065 ifb=-1thene9=7:gosub13000:return
+ 5070 iff=0thenx=x+1:v%(x)=-l-1:a=256:s(x)=i1*(c=3or1):goto5090
+ 5080 ifs(z)<0orc=3thene9=8:gosub13000
+ 5085 a=-v%(z):v%(z)=-l-1
+ 5090 gosub6000:return
+ 5100 ift$<>";"andt$<>"*"goto5900
+ 5120 a=n:ift$="*"thena=l
+ 5200 gosub6000
+ 5210 o$=t$
+ 5220 ifo$<>"+"ando$<>"-"ando$<>"*"ando$<>"/"goto5500
+ 5240 gosub6000
+ 5250 ift$<>":"goto5310
+ 5260 gosub14000
+ 5270 iff<>1thene9=6:gosub13000:goto5400
+ 5290 n2=v%(z):goto5400
+ 5310 ift$=";"thenn2=n:goto5400
+ 5320 ift$<>"*"goto5900
+ 5330 n2=l
+ 5400 ifo$="+"thena=a+n2
+ 5410 ifo$="-"thena=a-n2
+ 5420 ifo$="*"thena=a*n2
+ 5430 ifo$="/"thena=a/n2
+ 5440 goto5200
+ 5500 return
+ 5900 e9=0:gosub13000
+ 5910 return
+ 6000 rem
+ 6010 t$="?"
+ 6020 ifp>len(l$)thenreturn
+ 6030 forp=ptolen(l$)
+ 6040 ifmid$(l$,p,1)<>" "goto6100
+ 6050 nextp
+ 6060 return
+ 6100 c$=mid$(l$,p,1)
+ 6110 ifc$="!"thenreturn
+ 6115 d=asc(c$)
+ 6120 ifc$<>"'"andc$<>"$"andc$<>"@"andc$<>"%"and(d<48ord>57)goto6200
+ 6130 gosub8000
+ 6140 t$=";"
+ 6150 return
+ 6200 ifd<65ord>90goto6300
+ 6210 gosub7000
+ 6220 return
+ 6300 t$=c$
+ 6310 p=p+1
+ 6320 return
+ 7000 rem
+ 7010 m1=0:p2=p:i1=0
+ 7030 fori=1to6
+ 7040 d=asc(mid$(l$,p,1))
+ 7050 if(d<65ord>90)and(d<48ord>57)goto 7100
+ 7060 i1=i1*48+d-48
+ 7070 p=p+1
+ 7100 nexti
+ 7110 i2=p-p2
+ 7120 c$=mid$(l$,p2,1)
+ 7130 ifi2=1and(c$="a"orc$="x"orc$="y")thent$=c$:return
+ 7140 t$=":"
+ 7150 ifi2<>3thenreturn
+ 7160 s$=mid$(l$,p2,3)
+ 7170 fori=8to1step-1
+ 7180 ifs$<left$(m$(i),3)then7220
+ 7190 forj=1to7
+ 7200 ifs$=mid$(m$(i),j*6-5,3)then7230
+ 7210 nextj:return
+ 7220 nexti:return
+ 7230 s$=mid$(m$(i),j*6-2,2)
+ 7240 o=asc(left$(s$,1))*16+asc(right$(s$,1))-816
+ 7250 c=val(mid$(m$(i),j*6,1))
+ 7260 m1=-1:return
+ 8000 rem
+ 8010 ifmid$(l$,p,1)<>"'"goto8050
+ 8020 n=asc(mid$(l$,p+1,1))
+ 8030 p=p+2
+ 8040 return
+ 8050 n=0
+ 8060 ifmid$(l$,p,1)<>"$"goto8200
+ 8070 fori=1to4
+ 8080 p=p+1
+ 8090 l4=asc(mid$(l$,p,1)):l5=l4
+ 8100 ifl4>=48andl4<=57thenl4=l4-48
+ 8110 ifl4>=65andl4<=70thenl4=l4-55
+ 8120 ifl4=l5thenreturn
+ 8130 n=n*16+l4
+ 8140 nexti
+ 8150 return
+ 8200 ifmid$(l$,p,1)<>"@"goto8300
+ 8210 fori=1to6
+ 8220 p=p+1
+ 8230 l4=asc(mid$(l$,p,1))
+ 8240 ifl4<48orl4>55thenreturn
+ 8250 n=n*8+l4-48
+ 8260 nexti
+ 8270 return
+ 8300 ifmid$(l$,p,1)<>"%"goto8400
+ 8310 fori=1to16
+ 8320 p=p+1
+ 8330 l4=asc(mid$(l$,p,1))
+ 8340 ifl4<48orl4>49thenreturn
+ 8350 n=n*2+l4-48
+ 8360 nexti
+ 8370 return
+ 8400 n=asc(mid$(l$,p,1))-48
+ 8410 fori=1to4
+ 8420 p=p+1
+ 8430 l4=asc(mid$(l$,p,1))
+ 8440 ifl4<48orl4>57thenreturn
+ 8450 n=n*10+l4-48
+ 8460 nexti
+ 8470 p=p+1:return
+ 9000 rem
+ 9010 ifn1thenreturn
+ 9020 b=val(mid$(b$,m+1,1))
+ 9030 c(1)=o+m*4
+ 9040 c(2)=a-int(a/256)*256
+ 9050 c(3)=int(a/256)
+ 9060 oncgoto9300,9400,9200,9100,9500
+ 9100 c(1)=o:b=1:goto9800
+ 9200 c(1)=o:c(2)=a-l-2and255:b=2
+ 9230 if(a-l-2>127ora-l-2<-128)andp1=2thene9=3:gosub13000
+ 9240 goto9800
+ 9300 ifm=9thenm=6
+ 9310 ifm>7thene9=4:gosub13000
+ 9320 ifm=2ando=129goto9430
+ 9330 goto9800
+ 9400 onm+1goto 9430,9800,9430,9800,9430,9800,9430,9800,9430,9430,9410
+ 9410 c(1)=o+8
+ 9420 ifo<>194ando<>226goto9800
+ 9430 e9=4:gosub13000
+ 9440 goto9800
+ 9500 ifm=0orm=10goto9430
+ 9510 s$=mid$(o$(int((m+2)/3)),(m-int((m-1)/3)*3)*18+2*o-19,2)
+ 9515 c(1)=asc(left$(s$,1))*16+asc(right$(s$,1))-816
+ 9520 ifc(1)=0goto9430
+ 9530 ifo=2oro=3thenb=3
+ 9800 fori=1tob
+ 9810 l9=l+i-1
+ 9820 v9=c(i)
+ 9830 gosub12000
+ 9840 nexti
+ 9850 return
+10000 rem
+10010 iff$=""thenreadl$:l3=l2:goto10030
+10020 input#1,l$:if(st)and64thenl3=999:l$=".end":goto10030
+10025 l3=val(left$(l$,3)):l$=right$(l$,len(l$)-3)
+10030 p=1:l$=l$+"?"
+10040 return
+11000 rem
+11060 h2=4:h1=l
+11080 ifb=-1thenh1=s
+11090 gosub11900
+11100 printh$;" ";
+11110 ifb<1thenprint"      ";:goto11300
+11120 h2=2:h1=c(1)
+11140 gosub11900
+11150 printh$;
+11160 ifb<2thenprint"    ";:goto11300
+11170 h1=c(2)
+11180 gosub11900
+11190 printh$;
+11200 ifb<3thenprint"  ";:goto11300
+11210 h1=c(3)
+11220 gosub11900
+11230 printh$;
+11300 printright$("    "+str$(l3),4);" ";left$(l$,len(l$)-1)
+11310 return
+11900 h$=""
+11910 forh4=1toh2
+11920 h3=int(h1/(16^(h2-h4)))
+11930 h1=h1-h3*(16^(h2-h4))
+11940 ifh3>9thenh3=h3+7
+11950 h$=h$+chr$(h3+48)
+11960 nexth4
+11970 return
+12000 rem
+12010 pokel9,v9
+12020 return
+13000 rem
+13010 e1=e1+1
+13020 gosub11000
+13030 printtab(p+17);"^"
+13040 print"*** error";e9;"***";p;t$;c;o
+13170 return
+14000 rem
+14010 forz=1tox
+14020 ifi1=abs(s(z))thenf=sgn(v%(z)):return
+14030 nextz
+14040 f=0
+14050 return

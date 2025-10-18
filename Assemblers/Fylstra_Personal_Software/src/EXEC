@@ -1,0 +1,110 @@
+   90 print"executer/disassembler":print"(c) 1978, (p) 1978":print"personal software (tm)"
+   95 fori=1to2000:nexti:print"{clr}"
+  100 dimo$(16)
+  110 x$="0123456789abcdef"
+  120 l$="2223223332112"
+  130 o$(0)="brk;ora0err;err;err;ora1asl1err;php;ora2asl:err;err;ora3asl3err;"
+  140 o$(1)="bpl<ora4err;err;err;ora5asl5err;clc;ora6err;err;err;ora7asl7err;"
+  150 o$(2)="jsr3and0err;err;bit1and1rol1err;plp;and2rol:err;bit3and3rol3err;"
+  160 o$(3)="bmi<and4err;err;err;and5rol5err;sec;and6err;err;err;and7rol7err;"
+  170 o$(4)="rti;eor0err;err;err;eor1lsr1err;pha;eor2lsr:err;jmp3eor3lsr3err;"
+  180 o$(5)="bvc<eor4err;err;err;eor5lsr5err;cli;eor6err;err;err;eor7lsr7err;"
+  190 o$(6)="rts;adc0err;err;err;adc1ror1err;pla;adc2ror:err;jmp8adc3ror3err;"
+  200 o$(7)="bvs<adc4err;err;err;adc5ror5err;sei;adc6err;err;err;adc7ror7err;"
+  210 o$(8)="err;sta0err;err;sty1sta1stx1err;dey;err;txa;err;sty3sta3stx3err;"
+  220 o$(9)="bcc<sta4err;err;sty5sta5stx9err;tya;sta6txs;err;err;sta7err;err;"
+  230 o$(10)="ldy2lda0ldx2err;ldy1lda1ldx1err;tay;lda2tax;err;ldy3lda3ldx3err;"
+  240 o$(11)="bcs<lda4err;err;ldy5lda5ldx9err;clv;lda6tsx;err;ldy7lda7ldx6err;"
+  250 o$(12)="cpy2cmp0err;err;cpy1cmp1dec1err;iny;cmp2dex;err;cpy3cmp3dec3err;"
+  260 o$(13)="bne<cmp4err;err;err;cmp5dec5err;cld;cmp6err;err;err;cmp7dec7err;"
+  270 o$(14)="cpx2sbc0err;err;cpx1sbc1inc1err;inx;sbc2nop;err;cpx3sbc3inc3err;"
+  280 o$(15)="beq<sbc4err;err;err;sbc5inc5err;sed;sbc6err;err;err;sbc7inc7err;"
+  290 b$="                                      "
+  300 print"{home}";b$:printb$
+  310 print"{home}{rvon}e{rvof}xecute,{rvon}d{rvof}isassemble,{rvon}b{rvof}inary,{rvon}h{rvof}exbasic"
+  320 geta$:ifa$=""then320
+  330 ifa$="e"then400
+  340 ifa$="d"then500
+  350 ifa$="b"then700
+  360 ifa$="h"then800
+  370 ifa$="{clr}"thenprint"{clr}"
+  380 goto300
+  400 input"execute addr";a$:k=1:gosub950
+  410 poke1,a-int(a/256)*256
+  420 poke2,int(a/256)
+  430 input"parameter";x
+  440 print"result";usr(x)
+  450 goto300
+  500 printb$:printb$:print"{up}{up}";:input"dsmbl addr";a$:k=1:gosub950:s=a
+  505 input"# instrucs";n1
+  510 print"{clr}{down}{down}":fori=1ton1
+  515 b=int(s/256):gosub900
+  520 b=s-int(s/256)*256:gosub900
+  525 print" ";
+  530 j=peek(s):k=int(j/16):l=j-k*16+1
+  535 m=asc(mid$(o$(k),l*4,1))-asc("0")+1
+  540 n=val(mid$(l$,m,1)):forp=1ton
+  545 b=peek(s+p-1):gosub900
+  550 nextp
+  555 printtab(12);mid$(o$(k),l*4-3,3);" ";
+  560 b=peek(s+1)
+  565 onmgosub570,575,580,585,590,595,600,605,610,615,620,625,630:print:goto650
+  570 print"(";:gosub900:print",x)";:return
+  575 gosub900:return
+  580 print"#";:gosub900:return
+  585 gosub925:return
+  590 print"(";:gosub900:print"),y";:return
+  595 gosub900:print",x";:return
+  600 gosub925:print",y";:return
+  605 gosub925:print",x";:return
+  610 print"(";:gosub925:print")";:return
+  615 gosub900:print",y";:return
+  620 print"a";:return
+  625 return
+  630 ifb>127thenb=((notb)and255)+1:b=-b
+  635 t=s+2+b
+  640 b=int(t/256):gosub900
+  645 b=t-int(t/256)*256:gosub900:return
+  650 s=s+n:nexti
+  655 goto300
+  700 print"{clr}{down}{down}"
+  710 readh$:printh$
+  720 a$=left$(h$,4):k=1:gosub950:s=a
+  730 ifs=0then300
+  740 k=3:forj=0to(len(h$)-4)/2-1
+  750 a$=mid$(h$,5+j*2,2):gosub950
+  760 pokes+j,a
+  770 nextj
+  780 goto710
+  800 printb$:printb$:printb$:print"{up}{up}{up}";:k=1
+  810 input"start addr";a$:gosub950:s=a
+  820 input"end addr";a$:gosub950:e=a
+  830 input"data stmt no";n:n6=n+6
+  835 print"{clr}{down}{down}":fora=stoestep32
+  840 printn;"data ";
+  845 b=int(a/256):gosub900
+  850 b=a-int(a/256)*256:gosub900
+  855 fori=0to31
+  860 b=peek(a+i):gosub900
+  865 nexti
+  870 print:n=n+1:ifn=n6then880
+  875 nexta
+  880 printn;"data 0000"
+  882 print"run100"
+  884 print"{home}"
+  886 poke525,n-n6+8
+  888 fori=1to9:poke525+i,13:nexti
+  890 end
+  900 printmid$(x$,int(b/16)+1,1);mid$(x$,b-int(b/16)*16+1,1);:return
+  925 b=peek(s+2):gosub900
+  930 b=peek(s+1):gosub900
+  935 return
+  950 a$=right$("0000"+a$,4):a=0
+  955 forj1=kto4
+  960 c$=mid$(a$,j1,1)
+  965 ifc$>="a"andc$<="f"thenc=asc(c$)-asc("a")+10
+  970 ifc$>="0"andc$<="9"thenc=asc(c$)-asc("0")
+  975 a=a*16+c
+  980 nextj1
+  985 return
+ 1000 data"033aeaeaeaa2208a20d2ffe8e060d0f760","0000"
