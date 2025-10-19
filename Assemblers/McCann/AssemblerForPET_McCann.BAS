@@ -5,7 +5,7 @@ From [A Simple 6502 Assembler for the PET, Michael J. McCann, No. 6 Aug-Sept 197
 
  - Bug in 6060, missing "NULL,0"
  - Missing `=` in line 15020
- - Missing `VAL()` in lines 3050 and 14050
+ - Missing `VAL()` in lines 3050 and 14050 - this should be applied to `ASSMCCN`, as well as the patched `ASSMCCN5`
    - Or change `BY$()` to `BY()` in lines 10, 30, 3050 and 14050
 
 
@@ -15,7 +15,7 @@ Using this BASIC assembler program is pretty painful as only decimal input is al
 
 "Fantasy mnemonics" have to be used, i.e. `LDAIM` en lieu of `LDA #` - which is a real shame. It might be possible to use Zimmerman lines 220-228 to use the more standard `#` notation instead.
 
-Also, the assembled bytes are not shown when entering the source, so instant verification is not possible. Only delayed verification, by doing a full listing (ption 6). However, as there is no method of correct erroneous input, whilst in input mode, the lack of "byte feedback" probably doesn't matter all that much.
+Also, the assembled bytes are not shown when entering the source, so instant verification is not possible. Only delayed verification, by doing a full listing (option 6). However, as there is no method of correct erroneous input, whilst in input mode, the lack of "byte feedback" probably doesn't matter all that much.
 
 However, it seems quite capable and well designed.
 
