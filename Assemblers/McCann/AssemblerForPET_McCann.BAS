@@ -87,7 +87,9 @@ More usefully:
 ### Quit the listing with "q"
 
 ```none
+2905 PRINT"HIT 'Q' TO RETURN TO MAIN MENU"
 5051 IF A$="q" OR A$="Q" THEN I=0:RETURN
+2905 print"hit 'q' to return to main menu"
 5051 if a$="q" then i=0:return
 ```
 
@@ -112,7 +114,7 @@ Empty string and RETURN do not work, and cause exit. Use "D" instead:
 2940 rem done default address
 ```
 
-or on three lines
+or on three lines (line 2910 becomes too long!)
 
 ```none
 2910 INPUT"START ADDRESS";AD$:I=0:IF AD$="" THEN AD=826: GOTO 2940
@@ -129,6 +131,7 @@ or on three lines
 2940 rem done default address
 ```
 
+### Hex in columns - listing
 
 ## Filename
 
@@ -184,7 +187,7 @@ ASSMCCN
 4010 DC=PEEK(AD+1):GOSUB 1000
 4011 B2$=HX$
 4024 GOSUB 13000:P=DC
-4030 PRINT AD;AD$ TAB(12);BU;" ";B2$;TAB(21);MN$(IB);TAB(27);P
+4030 PRINT AD;AD$ TAB(12);B1$;" ";B2$;TAB(21);MN$(IB);TAB(27);P
 
 4035 AD=AD+2
 4040 GOTO 5030
@@ -418,7 +421,7 @@ ASSMCCN
 4010 dc=peek(ad+1):gosub 1000
 4011 b2$=hx$
 4024 gosub 13000:p=dc
-4030 print ad;ad$ tab(12);bu;" ";b2$;tab(21);mn$(ib);tab(27);p
+4030 print ad;ad$ tab(12);b1$;" ";b2$;tab(21);mn$(ib);tab(27);p
 
 4035 ad=ad+2
 4040 goto 5030
