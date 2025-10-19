@@ -3,11 +3,132 @@ From [A Simple 6502 Assembler for the PET, Michael J. McCann, No. 6 Aug-Sept 197
 
 ## Bugs
 
-Bug in 6060, missing "NULL,0"
+ - Bug in 6060, missing "NULL,0"
+ - Missing `=` in line 15020
+ - Missing `VAL()` in lines 3050 and 14050
+   - Or change `BY$()` to `BY()` in lines 10, 30, 3050 and 14050
+
 
 ## Notes
 
+Using this BASIC assembler program is pretty painful as only decimal input is allowed, so some manual translation is required. 
+
+"Fantasy mnemonics" have to be used, i.e. `LDAIM` en lieu of `LDA #` - which is a real shame. It might be possible to use Zimmerman lines 220-228 to use the more standard `#` notation instead.
+
+Also, the assembled bytes are not shown when entering the source, so instant verification is not possible. Only delayed verification, by doing a full listing (ption 6). However, as there is no method of correct erroneous input, whilst in input mode, the lack of "byte feedback" probably doesn't matter all that much.
+
+However, it seems quite capable and well designed.
+
+## Example
+
+```none
+SAMPLE MACHINE LANGUAGE PROGRAM LISTING
+
+826 033A  A9 66     LDAIM    102
+828 033C  A2 00     LDXIM    0
+830 033E  9D 00 80  STAX     32768
+833 0341  E8        INX
+83t 0342  F0 03     BEQ      3
+836 0344  4C 3E 03  JMP      830
+839 0347  EA        NOP
+840 0348  EA        NOP
+841 0349  9D 00 81  STAX     33024
+844 034C  E8        INX
+845 034D  F0 03     BEQ      3
+847 034F  4C 49 03  JMP      841
+850 0352  00        BRK
+
+SAMPLE MACHINE LANGUAGE PROGRAM AS INPUTTED FROM THE KEYBOARD
+
+? ORG 826
+? LDAIM 102 
+? LDXIM 0
+? STAX 32768 
+? INX
+? BEQ 3
+? JMP 830
+? NOP
+? NOP
+? STAX 33024 
+? INX
+? BEQ 3
+? JMP 841
+? BRK
+? END
+```
+
 ## TODO
+
+ - Add disk writing, instead of tape
+ - Add hex input
+ - Add labels
+
+More usefully:
+
+ - Add dissembly/byte display for each line as entered (like Zimmerman)
+ - Add immediate by `#`, Zimmerman lines 220-228, instead of `LDAIM`, change line 15080 `OP$=VAL(RIGHT$(A$,LEN(A$)-S))` and 15082 `IF OP$(1)="#" THEN REM IMMEDIATE` or `IF LEFT$(OP$,1)="#" THEN REM IMMEDIATE`
+ - Change HOME key to "Q" for exit, line 5051 `IF A$="q" OR A$="Q"`
+ - Add default to 826 or $33A for listing code (if you just hit enter)
+   - Line `2910 INPUT"START ADDRESS";AD:I=0` changes to `2910 INPUT"START ADDRESS";AD$:I=0
+` and `2920 IF AD$="" THEN AD=826: GOTO 2940`
+ - Make hex in columns, for single byte operand - not in the middle
+
+## Patches
+
+### `VAL(BY$())`
+
+```none
+3050 ON VAL(BY$(IB)) GOTO 3060,3090,4050
+14050 IF MN$=MN$(E) THEN BY=VAL(BY$(E)):F=1:CD=E:E=256
+3050 on val(by$(ib)) goto 3060,3090,4050
+14050 if mn$=mn$(e) then by=val(by$(e)):f=1:cd=e:e=256
+```
+
+### Quit the listing with "q"
+
+```none
+5051 IF A$="q" OR A$="Q" THEN I=0:RETURN
+5051 if a$="q" then i=0:return
+```
+
+### Default address on listing (option 6)
+
+Empty string and RETURN do not work, and cause exit. Use "D" instead:
+
+```none
+2910 INPUT"START ADDRESS";AD$:I=0
+2910 INPUT"ENTER START ADDRESS IN BASE 10 (D=DEFAULT:826)";AD$:I=0
+2920 IF AD$="" THEN AD=826: GOTO 2940
+2920 IF AD$=CHR$(13) THEN AD=826: GOTO 2940
+2920 IF AD$="D" THEN AD=826: GOTO 2940
+2930 AD=VAL(AD$)
+2940 REM DONE DEFAULT ADDRESS
+2910 input"start address";ad$:i=0
+2910 input"enter start address in base 10 (d=default:826)";ad$:i=0
+2920 if ad$="" then ad=826: goto 2940
+2920 if ad$=chr$(13) then ad=826: goto 2940
+2920 if ad$="d" then ad=826: goto 2940
+2930 ad=val(ad$)
+2940 rem done default address
+```
+
+or on three lines
+
+```none
+2910 INPUT"START ADDRESS";AD$:I=0:IF AD$="" THEN AD=826: GOTO 2940
+2910 INPUT"START ADDRESS";AD$:I=0:IF AD$=CHR$(13) THEN AD=826: GOTO 2940
+2910 INPUT"START ADDRESS";AD$:I=0:IF AD$="D" THEN AD=826: GOTO 2940
+2910 INPUT"ENTER START ADDRESS IN BASE 10 (D=DEFAULT:826)";AD$:I=0:IF AD$="D" THEN AD=826: GOTO 2940:REM TOO LONG!
+2930 AD=VAL(AD$)
+2940 REM DONE DEFAULT ADDRESS
+2910 input"start address";ad$:i=0:if ad$="" then ad=826: goto 2940
+2910 input"start address";ad$:i=0:if ad$=chr$(13) then ad=826: goto 2940
+2910 input"start address";ad$:i=0:if ad$="d" then ad=826: goto 2940
+2910 input"enter start address in base 10 (d=default:826)";ad$:i=0:if ad$="d" then ad=826: goto 2940: rem too long!
+2930 ad=val(ad$)
+2940 rem done default address
+```
+
 
 ## Filename
 
