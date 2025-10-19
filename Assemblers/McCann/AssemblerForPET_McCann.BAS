@@ -25,10 +25,10 @@ ASSMCCN
 60 FOR E=0 TO 15
 70 READ CO$(E)
 80 NEXT
-90 PRINT CHR$( 147): PRINT
-100 PRINT"1-INPUT SOURCE CODE AND ASSEMBLE" : PRINT
+90 PRINT CHR$(147):PRINT
+100 PRINT"1-INPUT SOURCE CODE AND ASSEMBLE":PRINT
 110 PRINT"2-SAVE OBJECT CODE ON TAPE":PRINT
-120 PRINT"3-LOAD OBJECT CODE FROM TAPE": PRINT
+120 PRINT"3-LOAD OBJECT CODE FROM TAPE":PRINT
 130 PRINT"4-RUN MACHINE LANGUAGE PROGRAM WITH SYS"
 140 PRINT"5-RUN MACHINE LANGUAGE PROGRAM WITH USR"
 150 PRINT"6-LIST MACHINE LANGUAGE PROGRAM"
@@ -49,29 +49,29 @@ ASSMCCN
 3000 IF I=24 GOTO 5050
 3001 I=I+1
 3005 IB=PEEK(AD)
-3015 IF MNt(IB)<>"NULL" GOTO 3050
-3025 DC= IB: GOSUB 1000: GOSUB 13000
+3015 IF MN$(IB)<>"NULL" GOTO 3050
+3025 DC=IB:GOSUB 1000:GOSUB 13000
 3030 PRINT AD;AD$ TAB(12) HX$ "*"
 3040 AD=AD+1:GOTO 3000
 3050 ON BY$(IB) GOTO 3060,3090,4050
-3060 DC=IB: GOSUB 1000: GOSUB 13000
+3060 DC=IB:GOSUB 1000:GOSUB 13000
 3070 PRINT AD;AD$ TAB(12);HX$;TAB(21);MN$(IB)
 3075 AD=AD+1
 3080 GOTO 5030
-3090 DC = IB: GOSUB 1000
+3090 DC=IB:GOSUB 1000
 4000 B1$=HX$
 4010 DC=PEEK(AD+1):GOSUB 1000
 4011 B2$=HX$
 4024 GOSUB 13000:P=DC
-4030 PRINT AD;AD$ TAB(12);BU;" ";B2$;TAB(21);MN$(IB);TAB(27) ;P
+4030 PRINT AD;AD$ TAB(12);BU;" ";B2$;TAB(21);MN$(IB);TAB(27);P
 
 4035 AD=AD+2
 4040 GOTO 5030
-4050 DC= IB: GOSUB 1000
+4050 DC=IB:GOSUB 1000
 4060 B1$=HX$
-4070 DC=PEEK( AD+1 ) :GOSUB 1000
+4070 DC=PEEK(AD+1):GOSUB 1000
 4080 B2$=HX$
-4090 DC=PEEK(AD+2) : GOSUB 1000
+4090 DC=PEEK(AD+2):GOSUB 1000
 
 
 
@@ -158,7 +158,7 @@ ASSMCCN
 13010 S2=INT(A/256)
 13012 A=A-S2*256
 13020 S=INT(A/16)
-13060 U= AD-(S3*4096+S2*256+S*16)
+13060 U=AD-(S3*4096+S2*256+S*16)
 13070 S3$=CO$(S3)
 13080 S2$=CO$(S2)
 13090 S$=CO$(S)
@@ -170,20 +170,20 @@ ASSMCCN
 14020 GOSUB 15000
 14030 F=0
 14040 FOR E=0 TO 255
-14050 IF MN$=MN$(E) THEN BY=BYil(E) :F=1 :CD=E:E=256
+14050 IF MN$=MN$(E) THEN BY=BY$(E):F=1:CD=E:E=256
 14060 NEXT
 14070 IF F=0 GOTO 14260
 14080 ON BY GOSUB 14100, 14130, I4l80
 14090 GOTO 14020
-14100 POKE AD, CD
+14100 POKE AD,CD
 14110 AD=AD+1
 14120 RETURN
-14130 IF OP>255 OR OP<0 THEN PRINT "ERROR" : RETURN
-14140 POKE AD, CD
+14130 IF OP>255 OR OP<0 THEN PRINT "ERROR":RETURN
+14140 POKE AD,CD
 14150 POKE AD+1,OP
 14160 AD=AD+2
 14170 RETURN
-14180 IF OP>65535 OR OP<0 THEN PRINT "ERROR" : RETURN
+14180 IF OP>65535 OR OP<0 THEN PRINT "ERROR":RETURN
 
 
 
@@ -195,10 +195,10 @@ ASSMCCN
 14240 AD=AD+3
 14250 RETURN
 14260 IF MN$="ORG" OR MN$="END" OR MN$="DC" GOTO 14280
-14270 PRINT "ERROR": GOTO 14020
+14270 PRINT "ERROR":GOTO 14020
 14280 IF MN$="ORG" GOTO 14300
 14290 GOTO 14340
-14300 IF F0=1 THEN PRINT "ERROR" :GOTO 14020
+14300 IF F0=1 THEN PRINT "ERROR":GOTO 14020
 14310 F0=1
 14320 AD=OP:ZZ=OP
 14330 GOTO 14020 
@@ -216,27 +216,27 @@ ASSMCCN
 14510 AD=AD+1
 14520 GOTO 14020
 15000 INPUT A$
-15010 IF LEN(A$)<3 THEN PRINT "ERROR" :GOTO 15000
-15020 IF LEN(A$)=3 THEN MN$=A$:OP=0 : RETURN
+15010 IF LEN(A$)<3 THEN PRINT "ERROR":GOTO 15000
+15020 IF LEN(A$)=3 THEN MN$=A$:OP=0:RETURN
 15030 S=0:FOR M=1 TO LEN(A$)
-15040 IF MID$(A$,M,1)=" " THEN S=M:M=LEN( A$)
+15040 IF MID$(A$,M,1)=" " THEN S=M:M=LEN(A$)
 15050 NEXT
-15060 IF S=0 THEN MN$=A$: RETURN
+15060 IF S=0 THEN MN$=A$:RETURN
 15070 MN$=LEFT$(A$,S-1)
-15080 OP=VAL( RIGHT$( A$ , LEN( A$) -S))
+15080 OP=VAL(RIGHT$(A$,LEN(A$)-S))
 15090 RETURN
 20000 PRINT CHR$(147):SZ=0
 20010 INPUT "ENTER PROGRAM NAME";N$
 20020 OPEN 1,1,1,N$
-20030 PRINT #1,ZZ:DA$=ZZ:GOSUB 20110
-20040 PRINT #1,EN:DA$=EN:GOSUB 20110
+20030 PRINT#1,ZZ:DA$=ZZ:GOSUB 20110
+20040 PRINT#1,EN:DA$=EN:GOSUB 20110
 20050 FOR AD=ZZ TO EN
 20060 DA$=PEEK(AD)
 20070 PRINT#1,DA$:GOSUB 20110
 20080 NEXT
 20090 CLOSE 1
 20100 RETURN
-20110 SZ=LEN(STR$(DA$) )+SZ+1
+20110 SZ=LEN(STR$(DA$))+SZ+1
 20120 IF SZ<192 THEN RETURN
 20130 POKE 59411,53
 20140 T=TI
@@ -261,10 +261,10 @@ ASSMCCN
 60 for e=0 to 15
 70 read co$(e)
 80 next
-90 print chr$(147): print
-100 print"1-input source code and assemble" : print
+90 print chr$(147):print
+100 print"1-input source code and assemble":print
 110 print"2-save object code on tape":print
-120 print"3-load object code from tape": print
+120 print"3-load object code from tape":print
 130 print"4-run machine language program with sys"
 140 print"5-run machine language program with usr"
 150 print"6-list machine language program"
@@ -285,29 +285,29 @@ ASSMCCN
 3000 if i=24 goto 5050
 3001 i=i+1
 3005 ib=peek(ad)
-3015 if mnt(ib)<>"null" goto 3050
-3025 dc=ib: gosub 1000: gosub 13000
+3015 if mn$(ib)<>"null" goto 3050
+3025 dc=ib:gosub 1000:gosub 13000
 3030 print ad;ad$ tab(12) hx$ "*"
 3040 ad=ad+1:goto 3000
 3050 on by$(ib) goto 3060,3090,4050
-3060 dc=ib: gosub 1000: gosub 13000
+3060 dc=ib:gosub 1000:gosub 13000
 3070 print ad;ad$ tab(12);hx$;tab(21);mn$(ib)
 3075 ad=ad+1
 3080 goto 5030
-3090 dc=ib: gosub 1000
+3090 dc=ib:gosub 1000
 4000 b1$=hx$
 4010 dc=peek(ad+1):gosub 1000
 4011 b2$=hx$
 4024 gosub 13000:p=dc
-4030 print ad;ad$ tab( 12) ;bu;" ";b2$;tab(21 ) ;mn$( ib) ;tab(27) ;p
+4030 print ad;ad$ tab(12);bu;" ";b2$;tab(21);mn$(ib);tab(27);p
 
 4035 ad=ad+2
 4040 goto 5030
-4050 dc= ib: gosub 1000
+4050 dc=ib:gosub 1000
 4060 b1$=hx$
-4070 dc=peek( ad+1 ) :gosub 1000
+4070 dc=peek(ad+1):gosub 1000
 4080 b2$=hx$
-4090 dc=peek(ad+2) : gosub 1000
+4090 dc=peek(ad+2):gosub 1000
 
 
 
@@ -394,7 +394,7 @@ ASSMCCN
 13010 s2=int(a/256)
 13012 a=a-s2*256
 13020 s=int(a/16)
-13060 u= ad-(s3*4096+s2*256+s*16)
+13060 u=ad-(s3*4096+s2*256+s*16)
 13070 s3$=co$(s3)
 13080 s2$=co$(s2)
 13090 s$=co$(s)
@@ -406,20 +406,20 @@ ASSMCCN
 14020 gosub 15000
 14030 f=0
 14040 for e=0 to 255
-14050 if mn$=mn$(e) then by=byil(e) :f=1 :cd=e:e=256
+14050 if mn$=mn$(e) then by=by$(e):f=1:cd=e:e=256
 14060 next
 14070 if f=0 goto 14260
 14080 on by gosub 14100, 14130, i4l80
 14090 goto 14020
-14100 poke ad, cd
+14100 poke ad,cd
 14110 ad=ad+1
 14120 return
-14130 if op>255 or op<0 then print "error" : return
-14140 poke ad, cd
+14130 if op>255 or op<0 then print "error":return
+14140 poke ad,cd
 14150 poke ad+1,op
 14160 ad=ad+2
 14170 return
-14180 if op>65535 or op<0 then print "error" : return
+14180 if op>65535 or op<0 then print "error":return
 
 
 
@@ -431,10 +431,10 @@ ASSMCCN
 14240 ad=ad+3
 14250 return
 14260 if mn$="org" or mn$="end" or mn$="dc" goto 14280
-14270 print "error": goto 14020
+14270 print "error":goto 14020
 14280 if mn$="org" goto 14300
 14290 goto 14340
-14300 if f0=1 then print "error" :goto 14020
+14300 if f0=1 then print "error":goto 14020
 14310 f0=1
 14320 ad=op:zz=op
 14330 goto 14020 
@@ -452,28 +452,28 @@ ASSMCCN
 14510 ad=ad+1
 14520 goto 14020
 15000 input a$
-15010 if len(a$)<3 then print "error" :goto 15000
-15020 if len(a$)=3 then mn$=a$:op=0 : return
+15010 if len(a$)<3 then print "error":goto 15000
+15020 if len(a$)=3 then mn$=a$:op=0:return
 15030 s=0:for m=1 to len(a$)
-15040 if mid$(a$,m,1)=" " then s=m:m=len( a$)
+15040 if mid$(a$,m,1)=" " then s=m:m=len(a$)
 15050 next
-15060 if s=0 then mn$=a$: return
+15060 if s=0 then mn$=a$:return
 15070 mn$=left$(a$,s-1)
-15080 op=val( right$( a$ , len( a$) -s))
+15080 op=val(right$(a$,len(a$)-s))
 15090 return
 20000 print chr$(147):sz=0
 20010 input "enter program name";n$
 20020 open 1,1,1,n$
-20030 print #1,zz:da$=zz:gosub 20110
-20040 print #1,en:da$=en:gosub 20110
+20030 print#1,zz:da$=zz:gosub 20110
+20040 print#1,en:da$=en:gosub 20110
 20050 for ad=zz to en
 20060 da$=peek(ad)
-20070 print #1,da$:gosub 20110
+20070 print#1,da$:gosub 20110
 20080 next
 20090 close 1
 20100 return
-20110 sz=len(str$(da$) )+sz+1
-20120if sz<192 then return
+20110 sz=len(str$(da$))+sz+1
+20120 if sz<192 then return
 20130 poke 59411,53
 20140 t=ti
 20150 if (ti-t)<6 goto 20150
