@@ -15,6 +15,19 @@ Using this BASIC assembler program is pretty painful as only decimal input is al
 
 "Fantasy mnemonics" have to be used, i.e. `LDAIM` en lieu of `LDA #` - which is a real shame. It might be possible to use Zimmerman lines 220-228 to use the more standard `#` notation instead.
 
+List of one real and seven fantasy mnemonics:
+
+```none
+EOR
+EORIX
+EORZ
+EORIM
+EORIY
+EORZX
+EORY
+EORX
+```
+
 Also, the assembled bytes are not shown when entering the source, so instant verification is not possible. Only delayed verification, by doing a full listing (option 6). However, as there is no method of correct erroneous input, whilst in input mode, the lack of "byte feedback" probably doesn't matter all that much.
 
 However, it seems quite capable and well designed.
@@ -59,19 +72,22 @@ SAMPLE MACHINE LANGUAGE PROGRAM AS INPUTTED FROM THE KEYBOARD
 
 ## TODO
 
+ - Separate notes and code
+
  - Add disk writing, instead of tape
- - Add hex input
+ - Add hex input - ASSMCCN already has hex output, so can't be hard to add the input. Look for `$`
  - Add labels
 
 More usefully:
 
- - Add dissembly/byte display for each line as entered (like Zimmerman)
- - Add immediate by `#`, Zimmerman lines 220-228, instead of `LDAIM`, change line 15080 `OP$=VAL(RIGHT$(A$,LEN(A$)-S))` and 15082 `IF OP$(1)="#" THEN REM IMMEDIATE` or `IF LEFT$(OP$,1)="#" THEN REM IMMEDIATE`
- - Change HOME key to "Q" for exit, line 5051 `IF A$="q" OR A$="Q"`
- - Add default to 826 or $33A for listing code (if you just hit enter)
+ - Add dissembly/byte display for each line as entered (like Zimmerman, lines 1000-1060, or just 1000-1020 if you aren't worried about the tape)
+   - Add an option 7 to toggle input bytes display
+ - Add immediate mode by `#`, Zimmerman lines 220-228, instead of `LDAIM`, change line 15080 `OP$=VAL(RIGHT$(A$,LEN(A$)-S))` and 15082 `IF OP$(1)="#" THEN REM IMMEDIATE` or `IF LEFT$(OP$,1)="#" THEN REM IMMEDIATE`
+ - Change HOME key to "Q" for exit, line 5051 `IF A$="q" OR A$="Q"` - DONE!
+ - Add default to 826 or $33A for listing code (if you just hit enter) - DONE!
    - Line `2910 INPUT"START ADDRESS";AD:I=0` changes to `2910 INPUT"START ADDRESS";AD$:I=0
 ` and `2920 IF AD$="" THEN AD=826: GOTO 2940`
- - Make hex in columns, for single byte operand - not in the middle
+ - Make hex in columns, for single byte operand - not in the middle - DONE!
 
 ## Patches
 
@@ -88,8 +104,10 @@ More usefully:
 
 ```none
 2905 PRINT"HIT 'Q' TO RETURN TO MAIN MENU"
+2915 IF AD$="Q" THEN RETURN
 5051 IF A$="q" OR A$="Q" THEN I=0:RETURN
 2905 print"hit 'q' to return to main menu"
+2915 if ad$="q" then return
 5051 if a$="q" then i=0:return
 ```
 
@@ -131,7 +149,44 @@ or on three lines (line 2910 becomes too long!)
 2940 rem done default address
 ```
 
-### Hex in columns - listing
+### Toggle byte display on input
+
+From Zimmerman
+
+```none
+1000 PRINT AD:FOR I=997TO996+BY:PRINT PEEK(I);:NEXT I
+1005 REM DISPLAY WHAT WAS RESULTING MACHINE LANGUAGE
+1010 AD=AD+BY:REM INCREMENT ADDRESS
+1020 FOR I=997 TO 996+BY:PRINT#1,PEEK(I):NEXT I
+1025 REM WRITE TO TAPE
+1030 T=TI:POKE 59411,53:REM TURN ON TAPE MOTOR
+1040 IF (TI-T)<2 GOTO 1040:REM FOR (1/30) SECOND
+1050 POKE 59411,61: REM TURN MOTOR OFF
+1060 GOTO 100
+```
+
+```none
+15 DB=0:REM DECLARE DISPLAY BYTE FLAG
+160 PRINT"7-DISPLAY BYTES ON INPUT: ";DB
+190 IF VAL(A$)=0 OR VAL(A$)>7 GOTO 180
+200 ON VAL(A$) GOSUB 14000,20000,9000,10000,11000,2900,300
+300 REM TOGGLE DISPLAY BYTES ON INPUT
+310 DB=ABS(DB-1)
+320 RETURN
+14105 IF DB THEN PRINT AD;" ";CD
+14155 IF DB THEN PRINT AD;" ";CD;" ";OP
+14235 IF DB THEN PRINT AD;" ";CD;" ";B1;" ";B2
+15 db=0:rem declare display byte flag
+160 print"7-display bytes on input: ";db
+190 if val(a$)=0 or val(a$)>7 goto 180
+200 on val(a$) gosub 14000,20000,9000,10000,11000,2900,300
+300 rem toggle display bytes on input
+310 db=abs(db-1)
+320 return
+14105 if db then print ad;" ";cd
+14155 if db then print ad;" ";cd;" ";op
+14235 if db then print ad;" ";cd;" ";b1;" ";b2
+```
 
 ## Filename
 
