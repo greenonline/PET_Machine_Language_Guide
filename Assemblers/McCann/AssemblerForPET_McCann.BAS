@@ -1,13 +1,16 @@
 From [A Simple 6502 Assembler for the PET, Michael J. McCann, No. 6 Aug-Sept 1978 MICRO-The 6502 Journal, pp 17-21](https://archive.org/details/micro-6502-journal-6)
 
 
-## Bugs
+## Bugs (Fixed)
 
  - Bug in 6060, missing "NULL,0"
  - Missing `=` in line 15020
  - Missing `VAL()` in lines 3050 and 14050 - this should be applied to `ASSMCCN`, as well as the patched `ASSMCCN5`
    - Or change `BY$()` to `BY()` in lines 10, 30, 3050 and 14050
 
+## Bugs (Not fixed)
+
+ - None?
 
 ## Notes
 
@@ -28,7 +31,7 @@ EORY
 EORX
 ```
 
-Also, the assembled bytes are not shown when entering the source, so instant verification is not possible. Only delayed verification, by doing a full listing (option 6). However, as there is no method of correct erroneous input, whilst in input mode, the lack of "byte feedback" probably doesn't matter all that much.
+Also, the assembled bytes are not shown when entering the source, so instant verification is not possible. Only delayed verification, by doing a full listing (option 6). However, as there is no method of correct erroneous input, whilst in input mode, the lack of "byte feedback" probably doesn't matter all that much. *However, this feature has now been added*.
 
 However, it seems quite capable and well designed.
 
@@ -76,12 +79,15 @@ SAMPLE MACHINE LANGUAGE PROGRAM AS INPUTTED FROM THE KEYBOARD
 
  - Add disk writing, instead of tape
  - Add hex input - ASSMCCN already has hex output, so can't be hard to add the input. Look for `$`
- - Add labels
+ - Add labels support
 
 More usefully:
 
- - Add dissembly/byte display for each line as entered (like Zimmerman, lines 1000-1060, or just 1000-1020 if you aren't worried about the tape)
-   - Add an option 7 to toggle input bytes display
+ - Add dissembly/byte display for each line as entered (like Zimmerman, lines 1000-1060, or just 1000-1020 if you aren't worried about the tape) - DONE!
+   - Add an option 7 to toggle input bytes display - DONE!
+ - Add dissembly/byte display for each line as entered (like Zimmerman, lines 1000-1060, with the tape stuff)
+ - Add dissembly/byte display for each line as entered in hex
+   - Add an option 8 to toggle input bytes display in hex
  - Add immediate mode by `#`, Zimmerman lines 220-228, instead of `LDAIM`, change line 15080 `OP$=VAL(RIGHT$(A$,LEN(A$)-S))` and 15082 `IF OP$(1)="#" THEN REM IMMEDIATE` or `IF LEFT$(OP$,1)="#" THEN REM IMMEDIATE`
  - Change HOME key to "Q" for exit, line 5051 `IF A$="q" OR A$="Q"` - DONE!
  - Add default to 826 or $33A for listing code (if you just hit enter) - DONE!
