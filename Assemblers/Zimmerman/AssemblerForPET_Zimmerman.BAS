@@ -128,7 +128,7 @@ ASSZIM
 262 N=VAL(LEFT$(C$,L-2))
 264 IF N>255 GOTO 270
 265 REM HANDLE "ZERO PAGE,X" HERE
-266 POKE 998,N:BY=2':IF CA=2 THEN POKE 997,OP+16: GOTO 1000
+266 POKE 998,N:BY=2:IF CA=2 THEN POKE 997,OP+16: GOTO 1000
 268 IF CA=1 OR CA=3 OR CA=5 THEN POKE 997,OP+20: GOTO 1000
 269 PRINT "NO":GOTO 100
 
@@ -270,7 +270,7 @@ ASSZIM
 262 n=val(left$(c$,l-2))
 264 if n>255 goto 270
 265 rem handle "zero page,x" here
-266 poke 998,n:by=2':if ca=2 then poke 997,op+16: goto 1000
+266 poke 998,n:by=2:if ca=2 then poke 997,op+16: goto 1000
 268 if ca=1 or ca=3 or ca=5 then poke 997,op+20: goto 1000
 269 print "no":goto 100
 
