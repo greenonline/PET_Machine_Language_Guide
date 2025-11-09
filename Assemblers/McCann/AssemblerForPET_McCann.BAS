@@ -7,6 +7,10 @@ From [A Simple 6502 Assembler for the PET, Michael J. McCann, No. 6 Aug-Sept 197
  - Missing `=` in line 15020
  - Missing `VAL()` in lines 3050 and 14050 - this should be applied to `ASSMCCN`, as well as the patched `ASSMCCN5`
    - Or change `BY$()` to `BY()` in lines 10, 30, 3050 and 14050
+ - `14350 GOTO 14380` should be `14350 GOTO 14480`
+   - Or add `14380 REM LAST OPTION (PLACEHOLDER)` in order to avoid `?undef'd statemennt error in  14350` - although this solution adds an additional REMark, thereby slowing the code down further.
+
+
 
 ## Bugs (Not fixed)
 
@@ -16,24 +20,83 @@ From [A Simple 6502 Assembler for the PET, Michael J. McCann, No. 6 Aug-Sept 197
 
 Using this BASIC assembler program is pretty painful as only decimal input is allowed, so some manual translation is required. 
 
-"Fantasy mnemonics" have to be used, i.e. `LDAIM` en lieu of `LDA #` - which is a real shame. It might be possible to use Zimmerman lines 220-228 to use the more standard `#` notation instead.
+However, the biggest fail for this assembler is that a plethora of "Fantasy mnemonics" have to be used, i.e. `LDAIM` en lieu of `LDA #` - which is a real shame. This is entirely down to its rather BFI approach to the addressing modes – which lacks finesse. It might be possible to use the Zimmerman engine, see lines 220-228, to use the more standard approach to addressing, including the `#` notation, instead.
 
 List of one real and seven fantasy mnemonics:
 
 ```none
-EOR
-EORIX
-EORZ
-EORIM
-EORIY
-EORZX
-EORY
-EORX
+EOR     - EOR abs             EOR $FFFF
+EORIX   - EOR X,ind           EOR X,$FF
+EORZ    - EOR zpg             EOR $FF
+EORIM   - EOR #  - Immediate  EOR #$FF
+EORIY   - EOR ind,Y           EOR Y,$FF
+EORZX   - EOR zpg,X           EOR $FF,X
+EORY    - EOR abs,Y           EOR $FFFF,Y
+EORX    - EOR abs,X           EOR $FFFF,X
 ```
+
+However, it has to be said, that the *same* notation is used in another article in the same magazine, on page 6:27, so maybe it isn't such a fantasy et of mnemonics after all. Does this mnemonic set have a particular name?
+
+ - Also see [6502 Family Reference](https://www.pagetable.com/c64ref/6502/?tab=3) - useful comparison of addressing modes and the command bytes
+ - There are useful notes in the Zimmerman assembler article, Personal Computing Dec 1978 p42-44:
+
+> The BASIC version begins with DATA statements used to initialize the arrays M$, OP, and CA. M$ has 56 elements (numbered 0 to 55) which are the pos- sible mnemonics for the 6502: ADC, AND, ... , to TYA. For each element of M$, the corresponding element of OP contains the "base opcode". Many instructions have only one possible mode of addressing, and their "base opcode" is the actual (decimal) op- code understood by the microproces- sor. Other instructions can have a var- iety of addressing modes; for example, LDA #27; LDA 32770; LDA 255; LDA (2,X); LDA (34), Y; LDA 47,X; LDA 2001,X; and LDA 1066,Y. For such instructions. the "base opcode" will have some integer added to it, de-
+pending on the addressing mode. Adam Osbourne's tables of opcodes and instructions in Volume 2 of his series on microcomputers makes this explicit by showing which
+bits of the binary instruction change for each mode. (Note that he omits the ROR instruction, however.)
+> 
+> So, M$(O), M$(1), ... , M$(55) contain the mnemonics, Ol'(O) through OP(55) contain the corresponding base opcodes, and finally, CA(O) to CA(55) contain the instruc- tion "category". For instance, all "branches" are category 8, a JMP is category 6, etc. The categories identify which instructions go with which addressing modes.
+> 
+> ...
+> 
+> Once the line is in, it's split into a mnemonic part, L$, and an operand part, C$. C$ may be empty, for instruc- tions such as NOP and TXA. The PET scans the list of legal mnemonics, and ifit finds the string L$, it puts its number in the array into the variable MN. (If you enter an illegal mnemonic, the computer prints an error mes- sage and the program goes back to wait for more input.) Entering the command END closes the tape me (very importantl) and ends the program's execution.
+> 
+> Once the computer finds the mnemonic, its category is looked up and put into the variable CA, and the base opcode is stored in OP. (These variables are distinct from arrays with the same name.)
+> 
+> The rest of the assembler program examines the instruction's operand, determines whether it is legal for use with an instruction of that category and then stores the ma- chine-language code for that instruction in memory locations 997, 998 and 999. Those locations are not used unless a second cassette recorder is called upon.
+If you use a second recorder, you must find another safe location; page 0, locations 0, 1 and 2 are all right if no calls to a user defined machine-language function (USR(X)) are needed.
+
+Especially regarding Adam Osbourne's tables showing bit changes for the addressing modes in [Volume 2 Sept 78 An Introduction to Microcomputers](http://www.bitsavers.org/pdf/osborne/books/Osborne_An_Introduction_to_Microcomputers_Volume_2_Sep78.pdf), especially table 10-3, and the legend thereof, that illustrates the bit settings for the various addressing modes:
+
+The following symbols are used in the object codes in Table 10-3.
+Address mode selection: 
+
+
+|CA |Bit|Offset|       Type          |Mnemonic|
+|---|---|------|---------------------|--------|
+|aaa|000|    0 |pre-indexed indirect | (ADR,X)|
+|   |001|   +4 |              direct |   ADR  |
+|   |010|   +8 |           immediate |   DATA |
+|   |011|  +12 |     extended direct |  ADR16 |
+|   |100|  +16 |post-indexed indirect| (ADR),Y|
+|   |101|  +20 |   base page indexed |  ADR,X |
+|   |110|  +24 |    absolute indexed | ADR16,Y|
+|   |111|  +28 |    absolute indexed | ADR16,x|
+|bb | 00|    0 |              direct |   ADR  |
+|   | 01|   +8 |     extended direct |  ADR16 |
+|   | 10|  +16 |   base page indexed |  ADR,X |
+|   | 11|  +20 |    absolute indexed | ADR16,X|
+|bbb|001|   +4 |              direct |   ADR  |
+|   |010|   +8 |         accumulator |     A  |
+|   |011|  +12 |     extended direct |  ADR16 |
+|   |101|  +20 |   base page indexed |  ADR,X |
+|   |111|  +28 |    absolute indexed | ADR16,X|
+|cc | 00|    0 |           immediate |   DATA |
+|   | 01|   +4 |              direct |   ADR  |
+|   | 11|  +12 |     extended direct |  ADR16 |
+|ddd|000|    0 |           immediate |   DATA |
+|   |001|   +4 |              direct |   ADR  |
+|   |011|  +12 |     extended direct |  ADR16 |
+|   |101|  +20 |   base page indexed |  ADR,Y in LDX; ADR,X in LDY |
+|   |111|  +28 |    absolute indexed | ADR16,Y in LDX; ADR16,X in LDY|
+
+
+Source: An introduction to Microcomputers Vol 2, Osborne, Sept 1978, pp10-25,10-26
 
 Also, the assembled bytes are not shown when entering the source, so instant verification is not possible. Only delayed verification, by doing a full listing (option 6). However, as there is no method of correct erroneous input, whilst in input mode, the lack of "byte feedback" probably doesn't matter all that much. *However, this feature has now been added*.
 
-However, it seems quite capable and well designed.
+Nevertheless, this assembler does feature a very nice disassembler – even though the "fantasy mnemonics" are used. However, this can be fixed by using the Zimmerman mnemonics and engine, instead.
+
+Apart from the failings listed above, this assembler seems quite capable and well designed.
 
 ## Example
 
@@ -76,10 +139,21 @@ SAMPLE MACHINE LANGUAGE PROGRAM AS INPUTTED FROM THE KEYBOARD
 ## TODO
 
  - Separate notes and code
+   - Two BASIC code files `L_ASSMCN.BAS` and `U_ASSMCN.BAS`, for lower and upper case listings, respectively
 
  - Add disk writing, instead of tape
  - Add hex input - ASSMCCN already has hex output, so can't be hard to add the input. Look for `$`
+   - Hex for `ORG`
+   - Hex for `DC`
  - Add labels support
+ - Renumbering is not easily achieved as the line number boundaries (1000, 2000, etc.) would be lost.
+   - It *is* possible, but then it would alter the code from the magazine and make OCR typo checking more difficult. Maybe aim for a step of 2, nstead of 10 or just 1, for the newly patched lines, whilst retaining the majority of the original line numbers? Moving only where essential, as has been done for some patches already.
+ - Is it possible to save a lump of code (start,end/length)?
+ - Patch to remove McCann engine, tape(?), but leave the dissassembler and the `DATA` statements, and change line 14000 to just call Zimmerman code 6300/6340 and `RETURN` – or change the `200 ON A GOSUB 6340,...`
+   - list *all* of the line numbers used by McCann's engine, as empty lines, to paste the patch.
+ - Patch for the three line fix to be pasted into *every* `assmcnXx` variant that there is, so far, on the disk. - DONE?
+ - Patch to change `PRINT:INPUT` to `6340 INPUT"BEGIN AT: ";A$`
+
 
 More usefully:
 
@@ -88,12 +162,27 @@ More usefully:
  - Add dissembly/byte display for each line as entered (like Zimmerman, lines 1000-1060, with the tape stuff)
  - Add dissembly/byte display for each line as entered in hex
    - Add an option 8 to toggle input bytes display in hex
+   - Also provides hex input
  - Add immediate mode by `#`, Zimmerman lines 220-228, instead of `LDAIM`, change line 15080 `OP$=VAL(RIGHT$(A$,LEN(A$)-S))` and 15082 `IF OP$(1)="#" THEN REM IMMEDIATE` or `IF LEFT$(OP$,1)="#" THEN REM IMMEDIATE`
+   - TODO: **May need to take the entire Zimmerman engine!!!***
+     - Need the Zimmerman `DATA` and array structure
+     - Need the Zimmerman instruction, and operand (i.e. `#` detection), logic and decoding
  - Change HOME key to "Q" for exit, line 5051 `IF A$="q" OR A$="Q"` - DONE!
  - Add default to 826 or $33A for listing code (if you just hit enter) - DONE!
    - Line `2910 INPUT"START ADDRESS";AD:I=0` changes to `2910 INPUT"START ADDRESS";AD$:I=0
-` and `2920 IF AD$="" THEN AD=826: GOTO 2940`
+` and `2920 IF AD$="" THEN AD=826:GOTO 2940`
  - Make hex in columns, for single byte operand - not in the middle - DONE!
+ - The display bytes toggles: Should there be just one tristate: No bytes; dec; hex.?
+   - or should both be enabled? Have `IF` statements with two `AND` conditions?
+   - The tristate idea seems better - just one menu option that cycles through the three options. But how to show what 1 and 2 mean? 
+     - Put it in the menu item? Is there enough screen width/space?
+     - Add some logic, `IF` to the switch display to print setting - best idea
+ - Use integers for flags - although this doesn't save memory and still uses five bytes instead of two, unless in an array (see page 25 of PET Machine Language Guide)
+ - Need to set `IM` (and `DH`/`IH`, but not required???) to zero, just before the condition that sets it to one.
+   - Setting DH (and resettting) upon finding a hex operand really messes things up – hex is not printed
+   - The GOTO *after* a condition might not work??? No, page 48 of Commodore BASIC 4.0 Reference Manual implies that the whole of multistatement lines are all conditional.
+ - Need to use DH with IF to jump the hex calc if not used, for speed
+ - Need to declare all variables at the beginning of the code, before the arrays to prevent slow down due to array reloacation, upon new variables being declared.
 
 ## Patches
 
@@ -124,16 +213,16 @@ Empty string and RETURN do not work, and cause exit. Use "D" instead:
 ```none
 2910 INPUT"START ADDRESS";AD$:I=0
 2910 INPUT"ENTER START ADDRESS IN BASE 10 (D=DEFAULT:826)";AD$:I=0
-2920 IF AD$="" THEN AD=826: GOTO 2940
-2920 IF AD$=CHR$(13) THEN AD=826: GOTO 2940
-2920 IF AD$="D" THEN AD=826: GOTO 2940
+2920 IF AD$="" THEN AD=826:GOTO 2940
+2920 IF AD$=CHR$(13) THEN AD=826:GOTO 2940
+2920 IF AD$="D" THEN AD=826:GOTO 2940
 2930 AD=VAL(AD$)
 2940 REM DONE DEFAULT ADDRESS
 2910 input"start address";ad$:i=0
 2910 input"enter start address in base 10 (d=default:826)";ad$:i=0
-2920 if ad$="" then ad=826: goto 2940
-2920 if ad$=chr$(13) then ad=826: goto 2940
-2920 if ad$="d" then ad=826: goto 2940
+2920 if ad$="" then ad=826:goto 2940
+2920 if ad$=chr$(13) then ad=826:goto 2940
+2920 if ad$="d" then ad=826:goto 2940
 2930 ad=val(ad$)
 2940 rem done default address
 ```
@@ -141,16 +230,16 @@ Empty string and RETURN do not work, and cause exit. Use "D" instead:
 or on three lines (line 2910 becomes too long!)
 
 ```none
-2910 INPUT"START ADDRESS";AD$:I=0:IF AD$="" THEN AD=826: GOTO 2940
-2910 INPUT"START ADDRESS";AD$:I=0:IF AD$=CHR$(13) THEN AD=826: GOTO 2940
-2910 INPUT"START ADDRESS";AD$:I=0:IF AD$="D" THEN AD=826: GOTO 2940
-2910 INPUT"ENTER START ADDRESS IN BASE 10 (D=DEFAULT:826)";AD$:I=0:IF AD$="D" THEN AD=826: GOTO 2940:REM TOO LONG!
+2910 INPUT"START ADDRESS";AD$:I=0:IF AD$="" THEN AD=826:GOTO 2940
+2910 INPUT"START ADDRESS";AD$:I=0:IF AD$=CHR$(13) THEN AD=826:GOTO 2940
+2910 INPUT"START ADDRESS";AD$:I=0:IF AD$="D" THEN AD=826:GOTO 2940
+2910 INPUT"ENTER START ADDRESS IN BASE 10 (D=DEFAULT:826)";AD$:I=0:IF AD$="D" THEN AD=826:GOTO 2940:REM TOO LONG!
 2930 AD=VAL(AD$)
 2940 REM DONE DEFAULT ADDRESS
-2910 input"start address";ad$:i=0:if ad$="" then ad=826: goto 2940
-2910 input"start address";ad$:i=0:if ad$=chr$(13) then ad=826: goto 2940
-2910 input"start address";ad$:i=0:if ad$="d" then ad=826: goto 2940
-2910 input"enter start address in base 10 (d=default:826)";ad$:i=0:if ad$="d" then ad=826: goto 2940: rem too long!
+2910 input"start address";ad$:i=0:if ad$="" then ad=826:goto 2940
+2910 input"start address";ad$:i=0:if ad$=chr$(13) then ad=826:goto 2940
+2910 input"start address";ad$:i=0:if ad$="d" then ad=826:goto 2940
+2910 input"enter start address in base 10 (d=default:826)";ad$:i=0:if ad$="d" then ad=826:goto 2940:rem too long!
 2930 ad=val(ad$)
 2940 rem done default address
 ```
@@ -167,9 +256,11 @@ From Zimmerman
 1025 REM WRITE TO TAPE
 1030 T=TI:POKE 59411,53:REM TURN ON TAPE MOTOR
 1040 IF (TI-T)<2 GOTO 1040:REM FOR (1/30) SECOND
-1050 POKE 59411,61: REM TURN MOTOR OFF
+1050 POKE 59411,61:REM TURN MOTOR OFF
 1060 GOTO 100
 ```
+
+The patch:
 
 ```none
 15 DB=0:REM DECLARE DISPLAY BYTE FLAG
@@ -194,12 +285,364 @@ From Zimmerman
 14235 if db then print ad;" ";cd;" ";b1;" ";b2
 ```
 
+### Toggle hex display bytes on input
+
+First, set things up nicely
+
+```none
+14 DH=0:REM DECLARE DISPLAY BYTE IN HEX FLAG
+170 PRINT"8-DISPLAY BYTES ON INPUT, IN HEX: ";DH
+190 IF VAL(A$)=0 OR VAL(A$)>8 GOTO 180
+200 ON VAL(A$) GOSUB 14000,20000,9000,10000,11000,2900,300,400
+400 REM TOGGLE DISPLAY BYTES ON INPUT IN HEX
+410 DH=ABS(DH-1)
+420 RETURN
+14 dh=0:rem declare display byte in hex flag
+170 print"8-display bytes on input, in hex: ";dh
+190 if val(a$)=0 or val(a$)>8 goto 180
+200 on val(a$) gosub 14000,20000,9000,10000,11000,2900,300,400
+400 rem toggle display bytes on input in hex
+410 dh=abs(dh-1)
+420 return
+```
+
+Use the existing `dec2hex` subroutine at lines 1000-1050, where `DC` contains the decimal *byte* (0-256) and `HX$` contains the "returned" hex *byte* value (0-FF):
+
+```none
+1000 SX=INT(DC/16)
+1010 UN=DC-(SX*16)
+1020 SX$=CO$(SX)
+1130 UN$=CO$(UN)
+1140 HX$=SX$+UN$
+1150 RETURN
+```
+
+
+
+Display code:
+
+```none
+14101 DC=AD:GOSUB1000:AH$=HX$:DC=CD:GOSUB1000:CD$=HX$
+14101 DC=INT(AD/256):GOSUB1000:AH$=HX$:DC=AD-DC*256:GOSUB1000:AH$=AH$+HX$
+14102 DC=CD:GOSUB1000:CD$=HX$
+14103 IF DH THEN PRINT AH$;" ";CD$
+14104 GOTO 14110
+14103 IF DH THEN PRINT AH$;" ";CD$:GOTO 14110
+14104
+14103 IF DH THEN PRINT AH$;" ";CD$:GOTO 14110
+14151 DC=AD:GOSUB1000:AH$=HX$:DC=CD:GOSUB1000:CD$=HX$
+14152 DC=OP:GOSUB1000:OH$=HX$
+14151 DC=INT(AD/256):GOSUB1000:AH$=HX$:DC=AD-DC*256:GOSUB1000:AH$=AH$+HX$
+14152 DC=CD:GOSUB1000:CD$=HX$:DC=OP:GOSUB1000:OH$=HX$
+14153 IF DH THEN PRINT AH$;" ";CD$;" ";OH$
+14154 GOTO 14160
+14153 IF DH THEN PRINT AH$;" ";CD$;" ";OH$:GOTO 14160
+14154
+14153 IF DH THEN PRINT AH$;" ";CD$;" ";OH$
+14231 DC=AD:GOSUB1000:AH$=HX$:DC=CD:GOSUB1000:CD$=HX$
+14231 DC=INT(AD/256):GOSUB1000:AH$=HX$:DC=AD-DC*256:GOSUB1000:AH$=AH$+HX$
+14232 DC=B1:GOSUB1000:B1$=HX$:DC=B2:GOSUB1000:B2$=HX$
+14231 DC=INT(AD/256):GOSUB1000:AH$=HX$:DC=AD-DC*256:GOSUB1000:AH$=AH$+HX$
+14232 DC=CD:GOSUB1000:CD$=HX$:DC=B1:GOSUB1000:B1$=HX$:DC=B2:GOSUB1000:B2$=HX$
+14233 IF DH THEN PRINT AH$;" ";CD$;" ";B1$;" ";B2$
+14234 GOTO 14240
+14233 IF DH THEN PRINT AH$;" ";CD$;" ";B1$;" ";B2$:GOTO 14240
+14234
+14233 IF DH THEN PRINT AH$;" ";CD$;" ";B1$;" ";B2$
+14101 dc=ad:gosub1000:ah$=hx$:dc=cd:gosub1000:cd$=hx$
+14101 dc=int(ad/256):gosub1000:ah$=hx$:dc=ad-dc*256:gosub1000:ah$=ah$+hx$
+14102 dc=cd:gosub1000:cd$=hx$
+14103 if dh then print ah$;" ";cd$
+14104 goto 14110
+14103 if dh then print ah$;" ";cd$:goto 14110
+14104
+14103 if dh then print ah$;" ";cd$
+14151 dc=ad:gosub1000:ah$=hx$:dc=cd:gosub1000:cd$=hx$
+14152 dc=op:gosub1000:oh$=hx$
+14151 dc=int(ad/256):gosub1000:ah$=hx$:dc=ad-dc*256:gosub1000:ah$=ah$+hx$
+14152 dc=cd:gosub1000:cd$=hx$:dc=op:gosub1000:oh$=hx$
+14153 if dh then print ah$;" ";cd$;" ";oh$
+14154 goto 14160
+14153 if dh then print ah$;" ";cd$;" ";oh$:goto 14160
+14154
+14153 if dh then print ah$;" ";cd$;" ";oh$
+14231 dc=ad:gosub1000:ah$=hx$:dc=cd:gosub1000:cd$=hx$
+14231 dc=int(ad/256):gosub1000:ah$=hx$:dc=ad-dc*256:gosub1000:ah$=ah$+hx$
+14232 dc=b1:gosub1000:b1$=hx$:dc=b2:gosub1000:b2$=hx$
+14231 dc=int(ad/256):gosub1000:ah$=hx$:dc=ad-dc*256:gosub1000:ah$=ah$+hx$
+14232 dc=cd:gosub1000:cd$=hx$:dc=b1:gosub1000:b1$=hx$:dc=b2:gosub1000:b2$=hx$
+14233 if dh then print ah$;" ";cd$;" ";b1$;" ";b2$
+14234 goto 14240
+14233 if dh then print ah$;" ";cd$;" ";b1$;" ";b2$:goto 14240
+14234
+14233 if dh then print ah$;" ";cd$;" ";b1$;" ";b2$
+```
+
+Works! Although the hex is lowercase
+
+### Toggle hex input
+
+Uses the same flags as **Toggle hex display bytes on input**, see above. If hex is to be displayed, then it makes sense to switch to hex only input. However, it would be better to make the input of hex dependant upon a preceding `$` as is usual – rather than force users into a particular "write mode" – so use `IH` as a flag (rather than reusing and possibly corrupting `DH`), or just route logic, depending upon `$` and reduce the number of variables used as flags??? So don't use IH.
+
+First we need a `hex2dec` subroutine, as per line 1000-1050:
+
+```none
+1060 REM HEX2DEC SUBROUTINE - ONE BYTE
+1070 SX$=LEFT$(HX$,1)
+1080 UN$=RIGHT$(HX$,1)
+1090 SX=
+1090 FOR N=0 TO 15:IF SX$=CO$(N) THEN SX=N:NEXT N:REM BFI METHOD
+1090 FOR N=0 TO 15:IF SX$=CO$(N) THEN SX=N:N=15:REM BFI METHOD
+1091 NEXT N:REM BFI METHOD
+1090 IF ASC(SX$)>=ASC("0") AND ASC(SX$)<=ASC("9") THEN SX=ASC(SX$)-48:GOTO1100
+1091 IF ASC(SX$)>=ASC("A") AND ASC(SX$)<=ASC("F") THEN SX=ASC(SX$)-65:GOTO1100
+1091 IF ASC(SX$)>=ASC("a") AND ASC(SX$)<=ASC("f") THEN SX=ASC(SX$)-65:GOTO1100
+1092 PRINT"BAD HEX (UPPER NIBBLE) INPUT":END:REM ERROR
+1100 UN=
+1100 FOR N=0 TO 15:IF UN$=CO$(N) THEN UN=N:NEXT N:REM BFI METHOD
+1100 IF ASC(UN$)>=ASC("0") AND ASC(UN$)<=ASC("9") THEN UN=ASC(UN$)-48:GOTO1110
+1101 IF ASC(UN$)>=ASC("A") AND ASC(UN$)<=ASC("F") THEN UN=ASC(UN$)-65:GOTO1110
+1101 IF ASC(UN$)>=ASC("a") AND ASC(UN$)<=ASC("f") THEN UN=ASC(UN$)-65:GOTO1110
+1102 PRINT"BAD HEX (LOWER NIBBLE) INPUT":END:REM ERROR
+1110 DC=SX*16+UN
+1120 RETURN
+1060 rem hex2dec subroutine - one byte
+1070 sx$=left$(hx$,1)
+1080 un$=right$(hx$,1)
+1090 sx=
+1090 for n=0 to 15:if sx$=co$(n) then sx=n:next n:rem bfi method
+1090 for n=0 to 15:if sx$=co$(n) then sx=n:n=15:rem bfi method
+1091 next n:rem bfi method
+1090 if asc(sx$)>=asc("0") and asc(sx$)<=asc("9") then sx=asc(sx$)-48:goto1100
+1091 if asc(sx$)>=asc("a") and asc(sx$)<=asc("f") then sx=asc(sx$)-65:goto1100
+1091 if asc(sx$)>=asc("a") and asc(sx$)<=asc("f") then sx=asc(sx$)-65:goto1100
+1092 print"bad hex (upper nibble) input":end:rem error
+1100 un=
+1100 for n=0 to 15:if un$=co$(n) then un=n:next n:rem bfi method
+1100 if asc(un$)>=asc("0") and asc(un$)<=asc("9") then un=asc(un$)-48:goto1110
+1101 if asc(un$)>=asc("a") and asc(un$)<=asc("f") then un=asc(un$)-65:goto1110
+1101 if asc(un$)>=asc("a") and asc(un$)<=asc("f") then un=asc(un$)-65:goto1110
+1102 print"bad hex (lower nibble) input":end:rem error
+1110 dc=sx*16+un
+1120 return
+```
+
+Detect the `$` amd `#`, HE$ is the "super hex" input, i.e. `#$FE` or just `$FE`. Also sets the "DISPLAY HEX BYTES" flag.
+
+```none
+15083 IF MID$(HE$,2,1)="$" THEN HE$=LEFT$(HE$,1)+RIGHT$(HE$,LEN(HE$)-2):REM STRIP "$" BUT LEAVE "#" - WHY???
+15083 IF LEFT$(HE$,1)="#" THEN HE$=RIGHT$(HE$,LEN(HE$)-1):IM=1:REM STRIP "#"
+15083 IM=0:IF LEFT$(HE$,1)="#"THENHE$=RIGHT$(HE$,LEN(HE$)-1):IM=1:REM STRIP "#"
+15084 IF LEFT$(HE$,1)="$" THEN HE$=RIGHT$(HE$,LEN(HE$)-1):DH=1:REM STRIP "$"
+15084 IF LEFT$(HE$,1)<>"$" THEN 15090
+15084 DH=0:IH=0:IF LEFT$(HE$,1)<>"$" THEN 15090
+15085 HE$=RIGHT$(HE$,LEN(HE$)-1):DH=1:IH=1:REM STRIP "$"
+15084 IH=0:IF LEFT$(HE$,1)<>"$" THEN 15090
+15085 HE$=RIGHT$(HE$,LEN(HE$)-1):IH=1:REM STRIP "$"
+15083 if mid$(he$,2,1)="$" then he$=left$(he$,1)+right$(he$,len(he$)-2):rem strip "$" but leave "#" - why???
+15083 if left$(he$,1)="#" then he$=right$(he$,len(he$)-1):im=1:rem strip "#"
+15083 im=0:if left$(he$,1)="#"thenhe$=right$(he$,len(he$)-1):im=1:rem strip "#"
+15084 if left$(he$,1)="$" then he$=right$(he$,len(he$)-1):dh=1:rem strip "$"
+15084 if left$(he$,1)<>"$" then 15090
+15084 dh=0:ih=0:if left$(he$,1)<>"$" then 15090
+15085 he$=right$(he$,len(he$)-1):dh=1:ih=1:rem strip "$"
+15084 ih=0:if left$(he$,1)<>"$" then 15090
+15085 he$=right$(he$,len(he$)-1):ih=1:rem strip "$"
+```
+
+Alt line numbers
+
+```none
+15077 IF MID$(HE$,2,1)="$" THEN HE$=LEFT$(HE$,1)+RIGHT$(HE$,LEN(HE$)-2):REM STRIP "$" BUT LEAVE "#" - WHY???
+15077 IM=0:IF LEFT$(HE$,1)="#" THEN HE$=RIGHT$(HE$,LEN(HE$)-1):IM=1:REM STRIP "#"
+15077 IM=0:IF L EFT$(HE$,1)="#"THENHE$=RIGHT$(HE$,LEN(HE$)-1):IM=1:REMSTRIP"#"
+15078 IF LEFT$(HE$,1)="$" THEN HE$=RIGHT$(HE$,LEN(HE$)-1):DH=1:REM STRIP "$"
+15078 IH=0:IF LEFT$(HE$,1)<>"$" THEN 15090
+15078 IF LEFT$(HE$,1)="$" THEN 15082
+15081 GOTO 15090
+15082 HE$=RIGHT$(HE$,LEN(HE$)-1):DH=1:REM STRIP "$"
+
+15077 if mid$(he$,2,1)="$" then he$=left$(he$,1)+right$(he$,len(he$)-2):rem strip "$" but leave "#" - why???
+15077 im=0:if left$(he$,1)="#" then he$=right$(he$,len(he$)-1):im=1:rem strip "#"
+15077 im=0:if left$(he$,1)="#"thenhe$=right$(he$,len(he$)-1):im=1:remstrip"#"
+15078 if left$(he$,1)="$" then he$=right$(he$,len(he$)-1):dh=1:rem strip "$"
+15078 ih=0:if left$(he$,1)<>"$" then 15090
+15078 ih=0:if left$(he$,1)="$" then 15082
+15081 goto 15090
+
+START:This bit has bad line numbers???
+15081 IF LEFT$(HE$,1)="$" THEN HE$=RIGHT$(HE$,LEN(HE$)-1):DH=1:REM STRIP "$"
+15081 IF LEFT$(HE$,1)<>"$" THEN 15090
+15082 HE$=RIGHT$(HE$,LEN(HE$)-1):DH=1:REM STRIP "$"
+15078 IF LEFT$(HE$,1)="$" THEN 15082
+15081 GOTO 15090
+15082 HE$=RIGHT$(HE$,LEN(HE$)-1):DH=1:REM STRIP "$"
+
+
+15077 if mid$(he$,2,1)="$" then he$=left$(he$,1)+right$(he$,len(he$)-2):rem strip "$" but leave "#" - why???
+15077 if left$(he$,1)="#" then he$=right$(he$,len(he$)-1):im=1:rem strip "#"
+15081 if left$(he$,1)="$" then he$=right$(he$,len(he$)-1):dh=1:rem strip "$"
+15081 if left$(he$,1)<>"$" then 15090
+15082 he$=right$(he$,len(he$)-1):dh=1:rem strip "$"
+15078 if left$(he$,1)="$" then 15082
+15081 goto 15090
+15082 he$=right$(he$,len(he$)-1):dh=1:rem strip "$"
+END:This bit has bad line numbers???
+```
+
+Note that `DH-1` should probably be `IH=1` for input hex, as setting `dH` may mess up the hex display???
+
+Split into byte size chunks
+
+```none
+15085 H1$="":IF LEN(HE$)=4 THEN H1$=LEFT$(HE$,2):HE$=RIGHT$(HE$,2)
+15086 IF LEN(HE$)<>2 THEN PRINT"HEX LENGTH ERROR":END:REM ERROR
+15087 D1=0:D2=0:HX$=HE$:GOSUB1060:D2=DC
+15088 IF H1$<>"" THEN HX$=H1$:GOSUB1060:D1=DC:REM D1 NOT REQUIRED, USE DC
+15089 OP=D1*256+D2
+15085 h1$="":if len(he$)=4 then h1$=left$(he$,2):he$=right$(he$,2)
+15086 if len(he$)<>2 then print"hex length error":end:rem error
+15087 d1=0:d2=0:hx$=he$:gosub1060:d2=dc
+15088 if h1$<>"" then hx$=h1$:gosub1060:d1=dc:rem d1 not required, use dc
+15089 op=d1*256+d2
+```
+
+Note the use of `H1$` as a "two byte operand" flag to save on variable count.
+
+Grab `OP$` (not needed) and set `HE$`:
+
+```none
+15081 OP$=VAL(RIGHT$(A$,LEN(A$)-S))
+15081 OP$=RIGHT$(A$,LEN(A$)-S)
+15082 HE$=OP$:DH=0:REM GRAB OPERAND & RESET DISPLAY HEX???
+```
+
+Alt line numbering
+
+```none
+15075 OP$=RIGHT$(A$,LEN(A$)-S)
+15076 HE$=OP$:DH=0:REM GRAB OPERAND & RESET DISPLAY HEX???
+15076 HE$=OP$:REM GRAB OPERAND
+15075 op$=right$(a$,len(a$)-s)
+15076 he$=op$:dh=0:rem grab operand & reset display hex???
+15076 he$=op$:rem grab operand
+```
+
+BUG: Now decimal input not reported, but it *is* input. Fixed the `GOTO` after the `IF` in the display hex input bytes code (lines 14103, 14153 and 14233), but no difference. Check ASMCN, does the same, wasn't properly tested. Check ASSMCCN5.
+
+However, I think that the issue is the clearing/setting of DH (and DI?) in lines 15076 and 15082. Also, the GOTO statements are superfluous, and removing would allow both dec and hex feedback printing.
+
+What is probably happening is the dec is input, but DH is set, so it tries to print the hex, but the hex trings are not set (due to the dec input). I am not convinved though – to test, add `14075 PRINT DH;" ";DB:END` and select both hex and dec display. Result was `0 1`, with DH reset by the `$` detection -> REMOVE!
+
+Maybe the GOTO isn't conditional? Yes, it seems like that - I dunno. But removing the GOTO in line 14153 seemed to fix it, so remove the other two. AND  remove the resetting of DH as it clearly messes things up.
+
+Make DH and DB mutually exclusive (and use just one menu and one variable flag), or is it useful to have both hex and dec printed?
+   - No need for complex/clever tristate setting, logic, display, and **memory**, if there is a simpler solution. THere is no need to show off!
+
+Fix(es): Removes `GOTO` and re/etting `DH`, plus speed enhancement (`IF NOT DH`)
+
+```none
+14101 IF NOT DH THEN 14105
+14101 IF DH=0 THEN 14105
+14102 DC=INT(AD/256):GOSUB1000:AH$=HX$:DC=AD-DC*256:GOSUB1000:AH$=AH$+HX$
+14103 DC=CD:GOSUB1000:CD$=HX$
+14104 PRINT AH$;" ";CD$
+14105 IF DB THEN PRINT AD;" ";CD
+
+14151 IF NOT DH THEN 14155
+14151 IF DH=0 THEN 14155
+14152 DC=INT(AD/256):GOSUB1000:AH$=HX$:DC=AD-DC*256:GOSUB1000:AH$=AH$+HX$
+14153 DC=CD:GOSUB1000:CD$=HX$:DC=OP:GOSUB1000:OH$=HX$
+14154 PRINT AH$;" ";CD$;" ";OH$
+14155 IF DB THEN PRINT AD;" ";CD;" ";OP
+
+14231 IF NOT DH THEN 14235
+14231 IF DH=0 THEN 14235
+14232 DC=INT(AD/256):GOSUB1000:AH$=HX$:DC=AD-DC*256:GOSUB1000:AH$=AH$+HX$
+14233 DC=CD:GOSUB1000:CD$=HX$:DC=B1:GOSUB1000:B1$=HX$:DC=B2:GOSUB1000:B2$=HX$
+14234 PRINT AH$;" ";CD$;" ";B1$;" ";B2$
+14235 IF DB THEN PRINT AD;" ";CD;" ";B1;" ";B2
+
+15076 HE$=OP$:REM GRAB OPERAND
+15078 IH=0:IF LEFT$(HE$,1)="$" THEN 15082
+15082 HE$=RIGHT$(HE$,LEN(HE$)-1):DH=1:REM STRIP "$"
+15085 H1$="":IF LEN(HE$)=4 THEN H1$=LEFT$(HE$,2):HE$=RIGHT$(HE$,2)
+
+
+START:This bit has bad line numbers???
+15084 IH=0:IF LEFT$(HE$,1)<>"$" THEN 15090
+15085 HE$=RIGHT$(HE$,LEN(HE$)-1):IH=1:REM STRIP "$"
+END:This bit has bad line numbers???
+
+14101 if not dh then 14105
+14101 if dh=0 then 14105
+14102 dc=int(ad/256):gosub1000:ah$=hx$:dc=ad-dc*256:gosub1000:ah$=ah$+hx$
+14103 dc=cd:gosub1000:cd$=hx$
+14104 print ah$;" ";cd$
+14105 if db then print ad;" ";cd
+
+14151 if not dh then 14155
+14151 if dh=0 then 14155
+14152 dc=int(ad/256):gosub1000:ah$=hx$:dc=ad-dc*256:gosub1000:ah$=ah$+hx$
+14153 dc=cd:gosub1000:cd$=hx$:dc=op:gosub1000:oh$=hx$
+14154 print ah$;" ";cd$;" ";oh$
+14155 if db then print ad;" ";cd;" ";op
+
+14231 if not dh then 14235
+14231 if dh=0 then 14235
+14232 dc=int(ad/256):gosub1000:ah$=hx$:dc=ad-dc*256:gosub1000:ah$=ah$+hx$
+14233 dc=cd:gosub1000:cd$=hx$:dc=b1:gosub1000:b1$=hx$:dc=b2:gosub1000:b2$=hx$
+14234 print ah$;" ";cd$;" ";b1$;" ";b2$
+14235 if db then print ad;" ";cd;" ";b1;" ";b2
+
+15076 he$=op$:rem grab operand
+15078 ih=0:if left$(he$,1)="$" then 15082
+15082 he$=right$(he$,len(he$)-1):ih=1:rem strip "$"
+15085 h1$="":if len(he$)=4 then h1$=left$(he$,2):he$=right$(he$,2)
+
+START:This bit has bad line numbers???
+15084 ih=0:if left$(he$,1)="$" then 15090
+15085 he$=right$(he$,len(he$)-1):ih=1:rem strip "$"
+END:This bit has bad line numbers???
+```
+
+`IH` may not be required. It *could* be a speed improvment, if usesd correctly/appropriately.
+
+Note: `IF NOT DH` does not work. You must use `IF DH=0`
+
+One last fix, as `A$` has not changed but `HE$` *has*.:
+
+```none
+15080 OP=VAL(HE$)
+15080 op=val(he$)
+```
+
+
+Notes:
+ - Use H1$ as a flag
+ - Filenames shorten `ASZIM` and `ASMCN`, or even further `ASZM` and `ASMN`
+ - CA=0, CA=3 and CA=5 for one and two byte operands
+ - Reuse dissassembler code to print the hex:
+```none
+4030 PRINT AD;AD$ TAB(12);B1$;" ";B2$;TAB(21);MN$(IB);TAB(27);P
+5020 PRINT AD;AD$ TAB(12);B1$;" ";B2$;" ";B3$;TAB(21);MN$(IB);TAB(27) OP
+```
+
 ## Filename
 
-ASSMCCN
+ - `ASSMCCN`
+   - Magazine version (with bug fixes, including `VAL(BY$())`
+ - `ASSMCCN5`
+   - Enhanced version (with bug fixes and patches)
+ - `ASMCN` - Hex output
+ - `ASMCN5` - Hex input
+
 
 ## Code
 
+In uppercase:
+
+```none
 1 REM 6502 ASSEMBLER PROGRAM
 2 REM BY MICHAEL J. MCCANN
 3 REM FOR USE ON THE COMMODORE PET
@@ -220,8 +663,6 @@ ASSMCCN
 180 GET A$:IF A$="" GOTO 180
 190 IF VAL(A$)=0 OR VAL(A$)>6 GOTO 180
 200 ON VAL(A$) GOSUB 14000,20000,9000,10000,11000,2900
-
-
 210 GOTO 90
 1000 SX=INT(DC/16)
 1010 UN=DC-(SX*16)
@@ -249,7 +690,6 @@ ASSMCCN
 4011 B2$=HX$
 4024 GOSUB 13000:P=DC
 4030 PRINT AD;AD$ TAB(12);B1$;" ";B2$;TAB(21);MN$(IB);TAB(27);P
-
 4035 AD=AD+2
 4040 GOTO 5030
 4050 DC=IB:GOSUB 1000
@@ -257,11 +697,6 @@ ASSMCCN
 4070 DC=PEEK(AD+1):GOSUB 1000
 4080 B2$=HX$
 4090 DC=PEEK(AD+2):GOSUB 1000
-
-
-
-
-
 5000 B3$=HX$
 5010 OP=PEEK(AD+1)+(PEEK(AD+2)*256)
 5011 GOSUB 13000
@@ -308,23 +743,15 @@ ASSMCCN
 6290 DATA 0,1,2,3,4,5,6,7,8,9,A,B,C,D,E,F
 9000 PRINT CHR$(147)
 9010 INPUT "ENTER FILE NAME";N$
-
-
 9020 OPEN 1,1,0,N$
 9030 INPUT#1,ZZ
 9040 INPUT#1,EN
 9050 FOR AD=ZZ TO EN
-9060 INPUT#1,DASl
-9070 POKE AD,DASl
+9060 INPUT#1,DA$
+9070 POKE AD,DA$
 9080 NEXT
 9090 CLOSE 1
 9100 RETURN
-
-
-
-
-
-
 10000 PRINT CHR$(147)
 10010 INPUT "ENTER ADDRESS IN BASE 10";AD
 10015 IF AD>65535 GOTO 10000
@@ -332,7 +759,7 @@ ASSMCCN
 10030 RETURN
 11000 PRINT CHR$(147)
 11010 INPUT"ENTER ACCUMULATOR VALUE";AC
-11015 IF AC<0 OR A0255 GOTO 11010
+11015 IF AC<0 OR AC>255 GOTO 11010
 11020 INPUT"ENTER ADDRESS IN BASE 10";AD
 11030 POKE 2,INT(AD/256)
 11040 POKE 1,AD-(INT(AD/256)*256)
@@ -369,7 +796,6 @@ ASSMCCN
 14160 AD=AD+2
 14170 RETURN
 14180 IF OP>65535 OR OP<0 THEN PRINT "ERROR":RETURN
-
 14190 POKE AD, CD
 14200 B2=INT(OP/256)
 14210 B1=OP-(B2*256)
@@ -385,17 +811,11 @@ ASSMCCN
 14310 F0=1
 14320 AD=OP:ZZ=OP
 14330 GOTO 14020 
-
-
-
-
-
-
 14340 IF MN$="END" GOTO 14360
 14350 GOTO 14380
 14360 EN=AD-1
 14370 RETURN
-14480 POKE AD, OP
+14480 POKE AD,OP
 14510 AD=AD+1
 14520 GOTO 14020
 15000 INPUT A$
@@ -427,12 +847,11 @@ ASSMCCN
 20160 POKE 59411,61
 20170 SZ=SZ-191
 20180 RETURN
+```
 
+In lowercase:
 
-
-
-
-
+```none
 1 rem 6502 assembler program
 2 rem by michael j. mccann
 3 rem for use on the commodore pet
@@ -454,8 +873,6 @@ ASSMCCN
 180 get a$:if a$="" goto 180
 190 if val(a$)=0 or val(a$)>6 goto 180
 200 on val(a$) gosub 14000,20000,9000,10000,11000,2900
-
-
 210 goto 90
 1000 sx=int(dc/16)
 1010 un=dc-(sx*16)
@@ -483,7 +900,6 @@ ASSMCCN
 4011 b2$=hx$
 4024 gosub 13000:p=dc
 4030 print ad;ad$ tab(12);b1$;" ";b2$;tab(21);mn$(ib);tab(27);p
-
 4035 ad=ad+2
 4040 goto 5030
 4050 dc=ib:gosub 1000
@@ -491,11 +907,6 @@ ASSMCCN
 4070 dc=peek(ad+1):gosub 1000
 4080 b2$=hx$
 4090 dc=peek(ad+2):gosub 1000
-
-
-
-
-
 5000 b3$=hx$
 5010 op=peek(ad+1)+(peek(ad+2)*256)
 5011 gosub 13000
@@ -542,23 +953,15 @@ ASSMCCN
 6290 data 0,1,2,3,4,5,6,7,8,9,a,b,c,d,e,f
 9000 print chr$(147)
 9010 input "enter file name";n$
-
-
 9020 open 1,1,0,n$
 9030 input#1,zz
 9040 input#1,en
 9050 for ad=zz to en
-9060 input#1,dasl
-9070 poke ad,dasl
+9060 input#1,da$
+9070 poke ad,da$
 9080 next
 9090 close 1
 9100 return
-
-
-
-
-
-
 10000 print chr$(147)
 10010 input "enter address in base 10";ad
 10015 if ad>65535 goto 10000
@@ -566,7 +969,7 @@ ASSMCCN
 10030 return
 11000 print chr$(147)
 11010 input"enter accumulator value";ac
-11015 if ac<0 or a0255 goto 11010
+11015 if ac<0 or ac>255 goto 11010
 11020 input"enter address in base 10";ad
 11030 poke 2,int(ad/256)
 11040 poke 1,ad-(int(ad/256)*256)
@@ -603,9 +1006,6 @@ ASSMCCN
 14160 ad=ad+2
 14170 return
 14180 if op>65535 or op<0 then print "error":return
-
-
-
 14190 poke ad, cd
 14200 b2=int(op/256)
 14210 b1=op-(b2*256)
@@ -621,17 +1021,11 @@ ASSMCCN
 14310 f0=1
 14320 ad=op:zz=op
 14330 goto 14020 
-
-
-
-
-
-
 14340 if mn$="end" goto 14360
 14350 goto 14380
 14360 en=ad-1
 14370 return
-14480 poke ad, op
+14480 poke ad,op
 14510 ad=ad+1
 14520 goto 14020
 15000 input a$
@@ -663,7 +1057,16 @@ ASSMCCN
 20160 poke 59411,61
 20170 sz=sz-191
 20180 return
+```
 
 
+Three line OCR fix for base and 5-8b variants (and then delete this) - DONE!
+
+```none
+9060 input#1,da$
+9070 poke ad,da$
+11015 if ac<0 or ac>255 goto 11010
+14380 rem last option (placeholder)
+```
 
 
