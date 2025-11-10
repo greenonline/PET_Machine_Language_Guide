@@ -19,3 +19,8 @@ Also included are the software resources (i.e. assemblers) recommended at the en
      - Direct download: [assemblers.d64.gz](https://www.zimmers.net/anonftp/pub/cbm/pet/programming/assemblers.d64.gz) - contains the four programs plus other stuff. 
 
 Some examples, for each of the assemblers, have also been included.
+
+## See also
+ - [Perl BASIC tool Kit](https://github.com/greenonline/Perl-BASIC-Tool-Kit)
+ - [Perl-6502-Assembler](https://github.com/greenonline/Perl-6502-Assembler)
+
